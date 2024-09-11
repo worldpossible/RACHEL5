@@ -186,14 +186,12 @@ rsync -av "jfield@192.168.x.x:~/RACHEL5/modules-4.1.2/" /media/RACHEL/rachel/mod
 sed -i '/<p>DataPost is not/s/<p>/<p><b>/' /media/RACHEL/rachel/modules/en-datapost/rachel-index.php
 sed -i '/<b>DataPost is not/s/<\/p>/<\/b><\/p>/' /media/RACHEL/rachel/modules/en-datapost/rachel-index.php
 
-# update node (v4.2.6 to v6.17.1)
-# XXX ah shoot ... looks like this really requires a full apt upgrade,
-# XXX which kills the WiFi light. Maybe ECS can give me some pointers.
-# XXX But here we go... perhaps should move this to the top:
-apt -f -o Dpkg::Options::="--force-overwrite" upgrade
-# choose US > Pacific for any timezone stuff 1, 2
-# default (keep installed) for all "overwrite" questions 1, 2
-# uh-oh -- this ends up requiring a full package upgrade which kills the wifi light... sigh
+# OK, how about:
+apt install npm
+npm install -g n
+n 6.17.1
+rm /usr/bin/node
+ln -s /usr/local/bin/nodejs /usr/bin/node
 
 ### Cleanup?
 ```
