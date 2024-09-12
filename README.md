@@ -166,8 +166,7 @@ we did the following:
 
 ```
 cd /opt
-# XXX for git clone to work I had to put my personal ssh keys in /root/.ssh
-# XXX we should make the repo public instead
+# XXX for git clone to work you have to put your github ssh keys in /root/.ssh
 git clone git@github.com:worldpossible/internetdelivered-emule-webservice.git emulewebservice
 cd emulewebservice/bin/
 ./install.sh
@@ -176,7 +175,7 @@ cd emulewebservice/bin/
 sed -i '/php7.1-fpm.sock/ s/php7.1/php7.0/' /etc/nginx/sites-available/rachel.nginx.conf
 service nginx restart
 # we should also stop datapost from inserting the webmail link because we end up with two:
-sed -i '0,/WEBMAIL/{/WEBMAIL/d}' index.php
+sed -i '0,/WEBMAIL/{/WEBMAIL/d}' /media/RACHEL/rachel/index.php
 
 # At this point webmail should work, but we have no module to show
 # to get that, we install some default modules:
@@ -186,12 +185,39 @@ rsync -av "jfield@192.168.x.x:~/RACHEL5/modules-4.1.2/" /media/RACHEL/rachel/mod
 sed -i '/<p>DataPost is not/s/<p>/<p><b>/' /media/RACHEL/rachel/modules/en-datapost/rachel-index.php
 sed -i '/<b>DataPost is not/s/<\/p>/<\/b><\/p>/' /media/RACHEL/rachel/modules/en-datapost/rachel-index.php
 
+# XXX at this point, the stats page no longer works -- something in php changed?
+
 # OK, how about:
 apt install npm
 npm install -g n
 n 6.17.1
-rm /usr/bin/node
-ln -s /usr/local/bin/nodejs /usr/bin/node
+rm /usr/bin/nodejs
+ln -s /usr/local/bin/node /usr/bin/nodejs
+service start emule
+
+# XXX emule stays up, but we still don't see a working datapost... researching...
+# ok, that was just because I was accessing the device through my own /etc/hosts
+# setup where the url was http://rachel5/ -- but if you access through the IP it
+# works. Should we change /medid/RACHEL/rachel/modules/en-datapost/rachel-index.php
+# to use $_SERVER[SERVER_ADDR] instead of $_SERVER[HTTP_HOST]?
+
+# XXX going through the verification steps on the above emule installation page,
+# after I successfully sent an internal message I ran into a problem trying to delete
+# the message: "Server Error: UID MOVE: Mailbox doesn't exist: Trash (0.000 + 0.000 secs)."
+# this was solved by going to "manage folders" and manually adding a folder called "Trash"
+# ... this should be the default, no? Note I found online:
+#  "there os a setting in the Roundcube config file - create_default_folders -
+#  which makes it auto create defailt folders on first login."
+
+# sending a message internally worked
+# sending a message remotely worked
+# sending a message remote-to-rachel did not work -- android did not pick up the bundle
+# i think i need to register the device
+# XXX: on the register link on RACHEL there is a missing icon
+# XXX: no indication which fields are required
+# XXX: all data lost if you submit with missing info
+
+
 
 ### Cleanup?
 ```
