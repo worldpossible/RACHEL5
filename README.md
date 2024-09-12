@@ -17,8 +17,9 @@ re-building the RACHEL software collection and configuration on the new system.
 * Clone the finished RACHEL 5 device and replace the disk image on the RACHEL 4.1.2 USB
 
 NOTE: Do not upgrade the system software. An `apt upgrade` will disable the WiFi status
-LED on the CMAL 150. We have not figured out how to upgrade the system software without
-disabling the WiFi status light.
+LED on the CMAL 150. The WiFi LED is operated through ath10k drivers that are implemented
+as proprietary kernel modules. Any upgrades will include some kernal upgrades that seem
+to disable this driver.
 
 # The Build Process
 
