@@ -171,11 +171,15 @@ git clone git@github.com:worldpossible/internetdelivered-emule-webservice.git em
 cd emulewebservice/bin/
 ./install.sh
 # wait several minutes
-# we should revert datapost code to not change this because we have to change it back:
+
+# XXX we should revert datapost code to not change this because we have to change it back:
 sed -i '/php7.1-fpm.sock/ s/php7.1/php7.0/' /etc/nginx/sites-available/rachel.nginx.conf
 service nginx restart
-# we should also stop datapost from inserting the webmail link because we end up with two:
+# the above happens when install_emulewebserver.sh copies over config/nginx/sites-available/rachel.nginx.conf
+
+# XXX we should also stop datapost from inserting the webmail link because we end up with two:
 sed -i '0,/WEBMAIL/{/WEBMAIL/d}' /media/RACHEL/rachel/index.php
+# the above takes place in /opt/emulewebservice/bin/install_emulewebserver.sh
 
 # At this point webmail should work, but we have no module to show
 # to get that, we install some default modules:
@@ -186,6 +190,9 @@ sed -i '/<p>DataPost is not/s/<p>/<p><b>/' /media/RACHEL/rachel/modules/en-datap
 sed -i '/<b>DataPost is not/s/<\/p>/<\/b><\/p>/' /media/RACHEL/rachel/modules/en-datapost/rachel-index.php
 
 # XXX at this point, the stats page no longer works -- something in php changed?
+# XXX nope! emule copies over it's own version of background.php from /opt/emulewebservice/config/media/RACHEL/rachel/admin/background.php
+# XXX this takes place in the install_emulewebservice.sh script
+# XXX revert to the version we installed above from contentshell-4.1.2
 
 # OK, how about:
 apt install npm
@@ -214,10 +221,38 @@ service start emule
 # sending a message remote-to-rachel did not work -- android did not pick up the bundle
 # i think i need to register the device
 # XXX: on the register link on RACHEL there is a missing icon
-# XXX: no indication which fields are required
+# XXX: no indication which fields are required (oh, it's all ... link to a gps tool? link to a default or choosable icon?)
 # XXX: all data lost if you submit with missing info
+# XXX: when done, you get a back button that takes you to the same blank form
+# Note: admin password: grep admin /opt/emulewebservice/node/datapost-admin/app.js
+# XXX: no way to see registration data? can you change by overwriting?
 
+# android app (i got it from datapost.site, not RACHEL device):
+# XXX: initial page doesn't inclue sync buttons (shows profile) - you have to go to menu > home
+# XXX: even after sending a reply from my gmail address, the app says there is "no bundle to pick up"
+# XXX: Romeo says there may be problems with the server at the moment, so moving on
+```
 
+### Install Kolibri
+
+```
+add-apt-repository ppa:learningequality/kolibri
+apt update
+apt install kolibri
+# yes on startup, default user "root"
+
+sed -i '/^# KOLIBRI_LISTEN_PORT/s/# //;s/8080/9090/' /etc/kolibri/daemon.conf
+sed -i '/^# KOLIBRI_USER/s/# //;s/kolibri/root/' /etc/kolibri/daemon.conf
+
+# it may not be running because of a port clash anyway
+service kolibri stop
+
+# kolibri installs its files in /root/.kolibri which we symlink:
+mv /root/.kolibri /media/RACHEL/.kolibri
+ln -s /media/RACHEL/.kolibri /root/.kolibri
+service kolibri start
+
+```
 
 ### Cleanup?
 ```
