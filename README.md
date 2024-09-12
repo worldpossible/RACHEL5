@@ -191,11 +191,13 @@ sed -i '/<p>DataPost is not/s/<p>/<p><b>/' /media/RACHEL/rachel/modules/en-datap
 sed -i '/<b>DataPost is not/s/<\/p>/<\/b><\/p>/' /media/RACHEL/rachel/modules/en-datapost/rachel-index.php
 
 # XXX at this point, the stats page no longer works -- something in php changed?
-# XXX nope! emule copies over it's own version of background.php from /opt/emulewebservice/config/media/RACHEL/rachel/admin/background.php
+# XXX nope! emule copies over it's own version of background.php from
+# XXX /opt/emulewebservice/config/media/RACHEL/rachel/admin/background.php
 # XXX this takes place in the install_emulewebservice.sh script
 # XXX revert to the version we installed above from contentshell-4.1.2
 
-# OK, how about:
+# At this point, dovecot and exim4 are running, apache is not needed,
+# but the emule service itself needs a new vesrion of nodejs
 apt install npm
 npm install -g n
 n 6.17.1
@@ -255,12 +257,22 @@ service kolibri start
 
 ```
 
+### Install KA-Lite
+
+TBD
+
+### Install Kiwix
+
+TBD
+
+### Install Moodle
+
+TBD
+
 ### Cleanup?
 ```
     apache2 not running (ok? do we need nginx hub.conf?)
     looks like apache2 is gone from rachel 4 (good? one webserver is plenty, thank you)
-
-    symlink: ln -s /usr/bin/nodejs /usr/bin/node
 
     no longer use /root/rachel-scripts/rachelStartup.sh ... is that OK?
     now use /etc/rachel/boot/ ... but it just does the firstboot.sh stuff
