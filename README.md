@@ -259,11 +259,65 @@ service kolibri start
 
 ### Install KA-Lite
 
-TBD
+```
+# needed for dpkg installation
+apt install -y unzip
+
+dpkg -i /root/files/ka-lite_0.17.4-0ubuntu2_all.deb
+    # run at startup? yes
+    # which user? root
+    # confirm? ok
+
+# install contentpacks (everything but videos, I believe) 
+kalite manage retrievecontentpack local en /root/files/contentpacks/en-0.17-fixed.zip
+kalite manage retrievecontentpack local es /root/files/contentpacks/es.zip
+kalite manage retrievecontentpack local fr /root/files/contentpacks/fr.zip
+kalite manage retrievecontentpack local hi /root/files/contentpacks/hi.zip
+kalite manage retrievecontentpack local pt-BR /root/files/contentpacks/pt-BR.zip
+kalite manage retrievecontentpack local pt-PT /root/files/contentpacks/pt-PT.zip
+kalite manage retrievecontentpack local sw /root/files/contentpacks/sw.zip
+
+# move kalite to big partition
+kalite stop
+mv /root/.kalite /media/RACHEL/.kalite
+ln -s /media/RACHEL/.kalite /root/.kalite
+kalite start
+
+# at this point ka-lite should be working on port 8008, but there is no
+# entry on the RACHEL index. We don't install that because it would require
+# installing the 40GB of videos at this point, but we'd rather do that
+# during the rest of the content install in production
+ 
+```
+
 
 ### Install Kiwix
 
-TBD
+```
+# install from web
+cd /root
+wget https://download.kiwix.org/release/kiwix-tools/kiwix-tools_linux-x86_64.tar.gz
+mkdir /var/kiwix /var/kiwix/bin
+mv /root/kiwix-tools_linux-x86_64-3.7.0-2/* /var/kiwix/bin
+
+# (updated admin/version.php to use kiwix-serve -V)
+# XXX also needed to do this becasue some modules check the old kiwix version
+/var/kiwix/bin/kiwix-serve -V | grep kiwix-tools | cut -d ' ' -f2 > /etc/kiwix-version
+
+# XXX I guess there's been a change where kiwix doesn't need a separate index file?
+# so we use a newer version of rachelKiwixStart.sh from kn-wikipedia (I'm sure it's elsewhere as well :)
+cp /root/files/rachelKiwixStart.sh /var/kiwix/
+
+# this is also changed (and available in kn-wikipedia) to point to a better location for the startup script
+cp /root/files/init-kiwix-service /etc/init.d/kiwix
+systemctl daemon-reload
+chmod +x /etc/init.d/kiwix 
+update-rc.d kiwix defaults
+service kiwix start
+
+# XXX given how much kiwix has changed, there may be some modules that need to be updated? 
+
+```
 
 ### Install Moodle
 
@@ -279,4 +333,13 @@ TBD
 
     are we using /var/kiwix/rachelKiwixStart.sh or /root/rachel-scripts/rachelKiwixStart.sh?
     seems the first one is in the /etc/rc*.d files? is the second a boondoggle?
+
+    # remove build files
+    rm -rf /root/goaccess-1.9.3.tar.gz
+    rm -rf /root/goaccess-1.9.3
+
+    # some modules need to be updated to understand latest kiwix:
+    kn-wikipedia
+
+
 ```
