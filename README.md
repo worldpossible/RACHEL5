@@ -321,25 +321,137 @@ service kiwix start
 
 ### Install Moodle
 
-TBD
+Newer versions of Moodle require newer versions of PHP. It may take some surgery to install another PHP
+and all required libaries and such without causing any conflicts with the system PHP (stuck at 7.0), so
+we opt for Moodle 3.6.10, the latest release to support PHP 7.0. You can find this and other will
+documented download options on their [legacy page](https://download.moodle.org/releases/legacy/).
 
-### Cleanup?
 ```
-    apache2 not running (ok? do we need nginx hub.conf?)
-    looks like apache2 is gone from rachel 4 (good? one webserver is plenty, thank you)
+# php dependencies
+apt install -y php7.0-mysql php7.0-xmlrpc php7.0-curl php7.0-zip
 
-    no longer use /root/rachel-scripts/rachelStartup.sh ... is that OK?
-    now use /etc/rachel/boot/ ... but it just does the firstboot.sh stuff
+# used to be this:
+# apt install -y php7.0-mysql php7.0-gd php7.0-xmlrpc \
+#    php7.0-intl php7.0-xml php7.0-curl php7.0-zip \
+#    php7.0-soap php7.0-mbstring
+# but several of those modules are already installed on the CMAL150
 
-    are we using /var/kiwix/rachelKiwixStart.sh or /root/rachel-scripts/rachelKiwixStart.sh?
-    seems the first one is in the /etc/rc*.d files? is the second a boondoggle?
+# we opt for mariadb -- it's a drop-in replacement for mysql but
+# has better performance (it's a fork of Oracle's MySQL)
+# root password: Rachel+1
+apt install mariadb-server
 
-    # remove build files
-    rm -rf /root/goaccess-1.9.3.tar.gz
-    rm -rf /root/goaccess-1.9.3
+# Following instructions at https://docs.moodle.org/32/en/Installation_quick_guide
+# we do the following:
+mysql -u root -pRachel+1
+CREATE DATABASE moodle DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,CREATE TEMPORARY TABLES,DROP,INDEX,ALTER ON moodle.* TO 'moodleuser'@'localhost' IDENTIFIED BY 'Rachel+1';
 
-    # some modules need to be updated to understand latest kiwix:
-    kn-wikipedia
+# some tweaks to the config
+cat /root/files/mysql-additions.txt >> /etc/mysql/my.cnf
+
+# move the data directory
+service mysql stop
+mv /var/lib/mysql /media/RACHEL/mysql
+# so people can find it where they expect it
+ln -s /media/RACHEL/mysql /var/lib/mysql
+
+# also: must give permission via apparmor:
+echo "  /media/RACHEL/mysql/ r," >> /etc/apparmor.d/local/usr.sbin.mysqld
+echo "  /media/RACHEL/mysql/** rwk," >> /etc/apparmor.d/local/usr.sbin.mysqld
+echo "  /proc/*/status r," >> /etc/apparmor.d/local/usr.sbin.mysqld
+service apparmor restart
+service mysql start
+
+# make a data directory for moodle
+mkdir /media/RACHEL/moodle-data
+chmod 777 /media/RACHEL/moodle-data
+
+# 
+cd /root
+wget https://download.moodle.org/download.php/direct/stable36/moodle-3.6.10.tgz
+tar -xzvf moodle-3.6.10.tgz
+mv moodle /media/RACHEL/moodle
+ln -s /media/RACHEL/moodle /media/RACHEL/rachel/moodle
+cd /media/RACHEL/moodle
+
+# configure moodle
+cp config-dist.php config.php
+sed -i '/CFG->dbtype/ s/pgsql/mariadb/' config.php
+sed -i '/CFG->dbuser/ s/username/moodleuser/' config.php
+sed -i '/CFG->dbpass/ s/password/Rachel+1/' config.php
+sed -i '/CFG->dataroot/ s/\/home\/example\/moodledata/\/media\/RACHEL\/moodle-data/' config.php
+# relative URL
+sed -i "/CFG->wwwroot/ s/example.com/\'.\$_SERVER['SERVER_ADDR'].'/" config.php
+# performance enhancement
+sed -i "/\$CFG->xsendfile = 'X-Accel-Redirect';/ s/\/\///" config.php
+sed -i "/\$CFG->xsendfilealiases/ s/\/\///" config.php
+sed -i "/'\/dataroot\/' => \$CFG->dataroot,/ s/\/\///" config.php
+sed -i "/'\/dataroot\/' => \$CFG->dataroot,/ a );" config.php
+
+vi /etc/crontab
+    # they recommend every minute, but given how little use this
+    # is really likely to get, I'm going to push to every 15
+    */15 * * * *    root /usr/bin/php /media/RACHEL/moodle/admin/cli/cron.php > /dev/null
+
+# you can move on now to web-based configuration through Moodle itself
+
+# Go to:
+ http://192.168.88.1/moodle/
+# there will be a minute or so delay the first time
+# 1. terms and conditions: continue
+# 2. server checks: continue
+# 3. wait several minutes for tables to be made, then: continue
+    -> mysql -u root -pRachel+1
+    -> show processlist
+    -> when empty (for at least several seconds) reload browser
+# 4. finish configuration in browser:
+Password: Rachel+1
+Email: admin@localhost.com
+# click update profile
+# (may timeout and require the "show processlist" dance to figure out when to reload)
+# (may need to go to Administration > Site administration > Notifications)
+Full site name: "Moodle on RACHEL"
+Short name: "moodle"
+# save changes
+
+# XXX do we want the en-moodle module installed by default?
+
+```
+
+### Cleanup
+
+```
+# Get rid of leftover install files
+apt clean
+
+# these should be moved up to their respective install sections
+rm -rf /root/goaccess-*
+rm -rf /root/moodle-*
+rm -rf /root/kiwix-tools*
+
+```
+
+### Research
+
+```
+# put these in place
+/etc/rachelinstaller-version
+/etc/datapost-version
+
+
+apache2 not running (ok? do we need nginx hub.conf?)
+looks like apache2 is gone from rachel 4 (good? one webserver is plenty, thank you)
+
+no longer use /root/rachel-scripts/rachelStartup.sh ... is that OK?
+now use /etc/rachel/boot/ ... but it just does the firstboot.sh stuff
+
+are we using /var/kiwix/rachelKiwixStart.sh or /root/rachel-scripts/rachelKiwixStart.sh?
+seems the first one is in the /etc/rc*.d files? is the second a boondoggle?
+
+
+# some modules need to be updated to understand latest kiwix:
+kn-wikipedia
 
 
 ```
