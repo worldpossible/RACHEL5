@@ -419,6 +419,27 @@ Short name: "moodle"
 
 ```
 
+### Misc Configuration
+
+```
+# this is used by the recovery USB in the recover.sh script
+# -- use whatever version you're on, obviously
+echo "v5.0.0" > /etc/rachelinstaller-version
+
+# I can't find versioning in the actual emule code, but
+# [this page](https://github.com/worldpossible/datapost-field-util)
+# claims it is v0.2.1 so we'll go with that until there's better information
+echo "v0.2.1" > /etc/datapost-version
+
+# these are slow, so we just save them
+kolibri --version | cut -d " " -f 3 > /etc/kolibri-version
+kalite --version > /etc/kalite-version
+
+# lots of tweaks were done to contentshell to fix minor differences with between the CMAL100/CMAL150
+
+```
+
+
 ### Cleanup
 
 ```
@@ -439,6 +460,7 @@ rm -rf /root/kiwix-tools*
 /etc/rachelinstaller-version
 /etc/datapost-version
 
+better way to manage versioning numbers in recovery.sh (encodes 
 
 apache2 not running (ok? do we need nginx hub.conf?)
 looks like apache2 is gone from rachel 4 (good? one webserver is plenty, thank you)
@@ -452,6 +474,11 @@ seems the first one is in the /etc/rc*.d files? is the second a boondoggle?
 
 # some modules need to be updated to understand latest kiwix:
 kn-wikipedia
+
+# some modules should be indexed and made into a searchable zim module:
+en-w3schools
+
+
 
 
 ```
