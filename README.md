@@ -535,7 +535,7 @@ rm -rf en-moodle/vids
 mv en-moodle/vids.small en-moodle/vids
 
 ```
-
+I also fixed a naming typo in en-moodle/vids with "25 Forum 3.1.mp4" and updated index.html
 
 ### Research
 
