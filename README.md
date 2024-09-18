@@ -553,9 +553,9 @@ The 5.x.x USB (~2.6GB) is larger than the 4.x.x (~2.3GB). Assuming we are buildi
 and imaging a drive larger than that, you can set up the USB as so on Mac OS:
 (replace diskXX with your USB's number)
 
-```diskutil partitionDisk /dev/diskXX MBR FAT32 RACHEL_500P 3G FREE FREE R```
+```diskutil partitionDisk /dev/diskXX MBR FAT32 RACHEL_500P 3.8G FREE UNUSED R```
 
-This creates a 3GB partition which should is plenty for RACHEL 5 and logs, and will
+This creates a partition which should have plenty for RACHEL 5 and logs, and will
 fit on any 4GB USB.
 
 After copying clonezilla 3.1.3 files, copying everything into recovery, adding OPTIONS, LOG,
