@@ -537,6 +537,12 @@ mv en-moodle/vids.small en-moodle/vids
 ```
 I also fixed a naming typo in en-moodle/vids with "25 Forum 3.1.mp4" and updated index.html
 
+The above helped a lot, but I also had to do the cat /dev/zero trick in "cleanup" section
+above which saved us another 50 MB ... enough?
+
+Not enough. I also had to just remove en-moodle (the system is there, but the module (with videos)
+will be installed during production. Also compressed en-local_content/intro.mp4
+
 ### Research
 
 ```
