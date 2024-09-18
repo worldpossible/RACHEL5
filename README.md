@@ -475,6 +475,8 @@ patch /etc/init.d/mysql -i mysql.init.patch
 
 ### Cleanup
 
+Some of this is helpful, some could probably be omitted
+
 ```
 # Get rid of leftover install files
 apt clean
@@ -484,7 +486,56 @@ rm -rf /root/goaccess-*
 rm -rf /root/moodle-*
 rm -rf /root/kiwix-tools*
 
+rm -rf /root/files
+rm -rf /.Trash-0
+rm -rf /tmp/firstboot.log
+rm -rf /tmp/sortmods*
+rm -rf /tmp/do_tasks.log
+rm /srv/.git* # this was a one-time thing
+
+# sanitize logs
+find /var/log -name '*.gz' -delete
+find /var/log -name '*.1' -delete
+for i in $(find /var/log -type f); do cat /dev/null > $i; done
+
+# sanitize history
+:> /root/.bash_history
+:> /root/.viminfo
+rm /root/.mysql_history
+rm /root/.wget-hsts
+:> /home/cap/.bash_history
+:> /home/cap/.viminfo
+
+# remove any extraneous auto-installer files
+rm /root/rachel-scripts/files/rachel-autoinstall.*
+
+# if you want to clear out freespace (makes zipped filesystem smaller)
+cat /dev/zero > /root/zerofile; rm /root/zerofile
+
+
 ```
+
+### Fix Size
+
+Turns out the full clonezilla image along with all the content and moduels
+no longer fits on the USB -- so I made a couple tweaks. The largest offender
+is the video files in en-datapost and en-moodle, so I ran them through ffmpeg
+with the default setting and got about 75% size reduction for en-datapost
+and 25% size reduction for en-moodle -- both with no perceptible
+loss in quality:
+
+```
+cd /media/RACHEL/rachel/modules
+ffmpeg -i en-datapost/content/video/about_datapost.mp4 en-datapost/content/video/about_datapost.small.mp4
+mv en-datapost/content/video/about_datapost.small.mp4 en-datapost/content/video/about_datapost.mp4
+
+mkdir en-moodle/vids.small
+for i in en-moodle/vids/*.mp4; do ffmpeg -i "$i" "vids.small/${i%.*}.mp4"; done
+rm -rf en-moodle/vids
+mv en-moodle/vids.small en-moodle/vids
+
+```
+
 
 ### Research
 
