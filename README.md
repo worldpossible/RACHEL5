@@ -621,5 +621,6 @@ Datapost   : "Register" uses admin/common.php for auth screen, but logo is broke
 
 emule service doesn't show up with service --status-all but it is running fine if you do service emule status
 
+we should add the rc.local changes to the image and remove it from recovery.sh
 
 ```
