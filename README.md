@@ -517,31 +517,68 @@ cat /dev/zero > /root/zerofile; rm /root/zerofile
 
 ### Fix Size
 
-Turns out the full clonezilla image along with all the content and moduels
-no longer fits on the USB -- so I made a couple tweaks. The largest offender
-is the video files in en-datapost and en-moodle, so I ran them through ffmpeg
-with the default setting and got about 75% size reduction for en-datapost
-and 25% size reduction for en-moodle -- both with no perceptible
-loss in quality:
+Before expanding the USB size as described below, I tried shrinking some videos in the included
+modules. From the modules directory (on my Mac):
 
 ```
-cd /media/RACHEL/rachel/modules
+tar -xzvf modules-5.0.0.tar.gz
+cd modules
+
 ffmpeg -i en-datapost/content/video/about_datapost.mp4 en-datapost/content/video/about_datapost.small.mp4
 mv en-datapost/content/video/about_datapost.small.mp4 en-datapost/content/video/about_datapost.mp4
 
-mkdir en-moodle/vids.small
-for i in en-moodle/vids/*.mp4; do ffmpeg -i "$i" "vids.small/${i%.*}.mp4"; done
-rm -rf en-moodle/vids
-mv en-moodle/vids.small en-moodle/vids
+for i in en-moodle/vids/*.mp4; do ffmpeg -i "$i" "${i%.*}.small.mp4"; done
+for i in en-moodle/vids/*.small.mp4; do mv "$i" "${i%.*.*}.mp4"; done
+# fix a typo
+en-moodle/vids/25\ Forum\ 3\ .1.mp4 en-moodle/vids/25\ Forum\ 3.1.mp4
+sed -i'' -e '/25 Forum/s/3 .1/3.1/' en-moodle/vids/index.html
+
+ffmpeg -i en-local_content/intro.mp4 en-local_content/intro.small.mp4
+mv en-local_content/intro.small.mp4 en-local_content/intro.mp4
+# remove cruft
+rm en-local_content/CAP3_old.png 
+
+cd ..
+tar --no-xattrs -czvf modules-5.0.0b.tar.gz modules
+
+# if all went well
+mv modules-5.0.0b.tar.gz modules-5.0.0.tar.gz
+```
+
+The above saved ~289M on the gz file. Not critical, but why not. 
+
+### Making the USB
+
+The 5.x.x USB (~2.6GB) is larger than the 4.x.x (~2.3GB). Assuming we are building
+and imaging a drive larger than that, you can set up the USB as so on Mac OS:
+(replace diskXX with your USB's number)
+
+```diskutil partitionDisk /dev/diskXX MBR FAT32 RACHEL_500P 3G FREE FREE R```
+
+This creates a 3GB partition which should is plenty for RACHEL 5 and logs, and will
+fit on any 4GB USB.
+
+After copying clonezilla 3.1.3 files, copying everything into recovery, adding OPTIONS, LOG,
+and INSTRUCTIONS directories, and installing our grub.cfg, I ran:
+
+```dot_clean -mv /Volumes/RACHEL_500P```
+
+Then I moved to Linux to set it as bootable. However, mtools was needed -- so:
+
+```apt install mtools```
+
+then:
 
 ```
-I also fixed a naming typo in en-moodle/vids with "25 Forum 3.1.mp4" and updated index.html
+cd /media/root/RACHEL_500P/utils/linux
+bash makeboot.sh /dev/sdb1
+```
 
-The above helped a lot, but I also had to do the cat /dev/zero trick in "cleanup" section
-above which saved us another 50 MB ... enough?
+Hit "y" a bunch of times and you should be good.
 
-Not enough. I also had to just remove en-moodle (the system is there, but the module (with videos)
-will be installed during production. Also compressed en-local_content/intro.mp4
+
+Later when when you want to make a USB from an image on the mac you can do this:
+```sudo asr restore --source RACHEL_500P.dmg --target /Volumes/RACHEL_500P --erase```
 
 ### Research
 
