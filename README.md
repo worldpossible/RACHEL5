@@ -113,6 +113,11 @@ sed -i '/^user / s/www-data/root/' /etc/nginx/nginx.conf
 sed -i '/^user =/ s/www-data/root/' /etc/php/7.0/fpm/pool.d/www.conf
 sed -i '/^group =/ s/www-data/root/' /etc/php/7.0/fpm/pool.d/www.conf
 
+# We used to see this in the logs:
+#   "WARNING: [pool www] server reached pm.max_children setting (5), consider raising it"
+# So:
+sed -i '/^pm.max_children = 5/ s/5/10/' /etc/php/7.0/fpm/pool.d/www.conf
+
 # allow slower scripts more time to complete
 sed -i '/^max_execution_time =/ s/30/300/' /etc/php/7.0/fpm/php.ini
 
@@ -297,6 +302,7 @@ kalite start
 # install from web
 cd /root
 wget https://download.kiwix.org/release/kiwix-tools/kiwix-tools_linux-x86_64.tar.gz
+tar -xzvf kiwix-tools_linux-x86_64.tar.gz
 mkdir /var/kiwix /var/kiwix/bin
 mv /root/kiwix-tools_linux-x86_64-3.7.0-2/* /var/kiwix/bin
 
@@ -307,6 +313,10 @@ mv /root/kiwix-tools_linux-x86_64-3.7.0-2/* /var/kiwix/bin
 # XXX I guess there's been a change where kiwix doesn't need a separate index file?
 # so we use a newer version of rachelKiwixStart.sh from kn-wikipedia (I'm sure it's elsewhere as well :)
 cp /root/files/rachelKiwixStart.sh /var/kiwix/
+
+# this allows kiwix to run and show an informative page even if there
+# are no modules installed
+cp /root/files/empty.zim /var/kiwix/
 
 # this is also changed (and available in kn-wikipedia) to point to a better location for the startup script
 cp /root/files/init-kiwix-service /etc/init.d/kiwix
@@ -367,7 +377,7 @@ service mysql start
 mkdir /media/RACHEL/moodle-data
 chmod 777 /media/RACHEL/moodle-data
 
-# 
+# ok, now install moodle itself (mostly just php)
 cd /root
 wget https://download.moodle.org/download.php/direct/stable36/moodle-3.6.10.tgz
 tar -xzvf moodle-3.6.10.tgz
@@ -435,7 +445,30 @@ echo "v0.2.1" > /etc/datapost-version
 kolibri --version | cut -d " " -f 3 > /etc/kolibri-version
 kalite --version > /etc/kalite-version
 
-# lots of tweaks were done to contentshell to fix minor differences with between the CMAL100/CMAL150
+# lots of tweaks were done to contentshell to fix minor differences with between
+# the CMAL100/CMAL150 but those will be checked in to github as v5.0.0
+
+# install php stemming (what uses this now? the modules i checked included their own stemmer?)
+apt -y install php7.0-dev
+yes yes | pecl install -O stem-2.0.0.tgz
+echo extension=stem.so > /etc/php/7.0/mods-available/stem.ini
+ln -s /etc/php/7.0/mods-available/stem.ini /etc/php/7.0/cli/conf.d/30-stem.ini
+ln -s /etc/php/7.0/mods-available/stem.ini /etc/php/7.0/fpm/conf.d/30-stem.ini
+
+# not sure it matters in practice, but we should be running in server mode, not GUI mode
+systemctl set-default multi-user.target
+# `runlevel` doesn't work so check with
+systemctl get-default
+
+# we had sporading issues on the CMAL100 with /.data (and thus /media/RACHEL) not
+# being mounted quickly enough during startup so that some services would fail to
+# start -- we patched the init scripts to wait for the mount. I don't know if the
+# CMAL150 has the same issue (I haven't seen it), but to be safe we include the
+# same patches here. Patches created with: diff -Naur file.orig file.edit
+patch /etc/init.d/ka-lite -i ka-lite.init.patch
+patch /etc/init.d/kolibri -i kolibri.init.patch
+patch /etc/init.d/mysql -i mysql.init.patch
+# kiwix already has the wait code in kiwix-init-service
 
 ```
 
@@ -478,7 +511,20 @@ kn-wikipedia
 # some modules should be indexed and made into a searchable zim module:
 en-w3schools
 
+# possible tweaks
+Turn it in : make teacher login submit when you hit enter on password
+           : no confirm on delete?
 
+File Share : no way to delete files? 
+           : no security for uploading?
+           : combine with Turn it in? Or not (but improve?)
+           : or just lose this module?
+
+Datapost   : "Register" uses admin/common.php for auth screen, but logo is broken
+             because the path is relative and the dir is different (this is hardcoded
+             in common.php authorized()
+
+emule service doesn't show up with service --status-all but it is running fine if you do service emule status
 
 
 ```
