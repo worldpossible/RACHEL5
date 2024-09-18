@@ -578,6 +578,7 @@ Hit "y" a bunch of times and you should be good.
 
 
 Later when when you want to make a USB from an image on the mac you can do this:
+
 ```sudo asr restore --source RACHEL_500P.dmg --target /Volumes/RACHEL_500P --erase```
 
 ### Research
