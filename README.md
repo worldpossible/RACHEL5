@@ -623,4 +623,8 @@ emule service doesn't show up with service --status-all but it is running fine i
 
 we should add the rc.local changes to the image and remove it from recovery.sh
 
+nicer MOTD on RACHEL 4
+
+"logs" user created by datapost -- su to logs, crontab -e to see the cron entry
+
 ```
