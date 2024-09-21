@@ -470,6 +470,13 @@ patch /etc/init.d/kolibri -i kolibri.init.patch
 patch /etc/init.d/mysql -i mysql.init.patch
 # kiwix already has the wait code in kiwix-init-service
 
+# we want a nicer MOTD
+cat >> /etc/update-motd.d/00-header << EOF
+printf "Welcome to RACHEL-Plus from World Possible \n\n"
+printf "RACHEL: $(cat /etc/rachelinstaller-version) \n"
+printf "MAC: $(cat /sys/class/net/enp2s0/address) \n"
+EOF
+
 ```
 
 
@@ -549,6 +556,10 @@ The above saved ~289M on the gz file. Not critical, but why not.
 
 ### Making the USB
 
+XXX this is not accurate -- for some reason there are boot problems when you
+XXX make a smaller disk like this -- for now we just use a physical 4GB USB
+XXX and partition the whole thing
+
 The 5.x.x USB (~2.6GB) is larger than the 4.x.x (~2.3GB). Assuming we are building
 and imaging a drive larger than that, you can set up the USB as so on Mac OS:
 (replace diskXX with your USB's number)
@@ -580,6 +591,14 @@ Hit "y" a bunch of times and you should be good.
 Later when when you want to make a USB from an image on the mac you can do this:
 
 ```sudo asr restore --source RACHEL_500P.dmg --target /Volumes/RACHEL_500P --erase```
+
+### Additional Changes
+
+After delivering a RC (release candidate) there were a few items that needed to be changed.
+First, I discovered that /etc/rachel/install/firstboot.py differs between recovery and production USB.
+Namely, the production USB version of firstboot.py includes the code to connect to the production server.
+
+Both versions are now included in my recoveryfiles-5.0.0 which needs to get checked in here eventually.
 
 ### Research
 
@@ -626,5 +645,33 @@ we should add the rc.local changes to the image and remove it from recovery.sh
 nicer MOTD on RACHEL 4
 
 "logs" user created by datapost -- su to logs, crontab -e to see the cron entry
+
+```
+### if you're just tweaking post 5.0.0-RC
+
+```
+# pre-image
+Do motd stuff
+# post image
+Fix firstboot.py in the recovery directory
+# i'm trying to update kolibri -- thought I needed to update python but we actually already have python 3.5.2 which should work
+# so i got a deb of kolibri from their site (turned out to be 0.17.1
+wget https://learningequality.org/r/kolibri-deb-latest
+# and more or less followed instructions here:
+https://kolibri.readthedocs.io/en/latest/install/ubuntu-debian.html
+# but it was:
+mv kolibri-deb-latest kolibri-deb-latest.deb
+dpkg -i kolibri-deb-latest.deb
+# no, that didn't work (wants python 3.6+) so instead:
+pip install kolibri==0.16.2
+# meh, that worked to install but it wouldn't start with either python 2.7 or 3.5 (the versions we have)
+```
+
+OK further research indicates you can't upgrade python past 3.5 on Ubuntu 16, even with non-standard
+repositories. Kolibri > 0.15 requries Python 3.6+ so that's that.
+
+ Probably we should upgrade everything to Ubuntu 20 and forget about the wifi light.
+
+
 
 ```
