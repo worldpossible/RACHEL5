@@ -23,7 +23,7 @@ to disable this driver.
 
 # The Build Process
 
-Starting with a bare CMAL 150 as provided by ECS (or a cloned reinstall of same):
+Start with a bare CMAL 150 as provided by ECS or a cloned reinstall of same.
 
 ## Initial Setup and Conveniences
 
@@ -130,10 +130,6 @@ systemctl daemon-reload
 service php7.0-fpm restart
 service nginx restart
 
-# XXX include other php dependencies here?
-
-# NOTE: on this device the admin portal (port 8080) runs on uhttpd (migrate to nginx?)
-
 ```
 
 ### Install RACHEL contentshell
@@ -162,7 +158,10 @@ make install
 sed -i '/^#time-format %H:%M:%S/ s/#//' /usr/local/etc/goaccess/goaccess.conf
 sed -i '/^#date-format %d\/%b\/%Y/ s/#//' /usr/local/etc/goaccess/goaccess.conf
 sed -i '/# NCSA Combined Log Format$/{n;s/^#//}' /usr/local/etc/goaccess/goaccess.conf
-# XXX we can improve these stats by configuring it to ignore javascript, css, and such
+
+# clean up
+rm -rf goaccess-*
+
 ```
 
 ### Install DataPost
@@ -305,8 +304,9 @@ wget https://download.kiwix.org/release/kiwix-tools/kiwix-tools_linux-x86_64.tar
 tar -xzvf kiwix-tools_linux-x86_64.tar.gz
 mkdir /var/kiwix /var/kiwix/bin
 mv /root/kiwix-tools_linux-x86_64-3.7.0-2/* /var/kiwix/bin
+rm -rf kiwix-tools*
 
-# (updated admin/version.php to use kiwix-serve -V)
+# updated admin/version.php to use kiwix-serve -V
 # XXX also needed to do this becasue some modules check the old kiwix version
 /var/kiwix/bin/kiwix-serve -V | grep kiwix-tools | cut -d ' ' -f2 > /etc/kiwix-version
 
@@ -377,10 +377,11 @@ service mysql start
 mkdir /media/RACHEL/moodle-data
 chmod 777 /media/RACHEL/moodle-data
 
-# ok, now install moodle itself (mostly just php)
+# ok, now install moodle itself (just a directory full of PHP):
 cd /root
 wget https://download.moodle.org/download.php/direct/stable36/moodle-3.6.10.tgz
 tar -xzvf moodle-3.6.10.tgz
+rm -rf /root/moodle-3.6.10.tgz
 mv moodle /media/RACHEL/moodle
 ln -s /media/RACHEL/moodle /media/RACHEL/rachel/moodle
 cd /media/RACHEL/moodle
@@ -425,8 +426,6 @@ Full site name: "Moodle on RACHEL"
 Short name: "moodle"
 # save changes
 
-# XXX do we want the en-moodle module installed by default?
-
 ```
 
 ### Misc Configuration
@@ -460,7 +459,7 @@ systemctl set-default multi-user.target
 # `runlevel` doesn't work so check with
 systemctl get-default
 
-# we had sporading issues on the CMAL100 with /.data (and thus /media/RACHEL) not
+# we had sporadic issues on the CMAL100 with /.data (and thus /media/RACHEL) not
 # being mounted quickly enough during startup so that some services would fail to
 # start -- we patched the init scripts to wait for the mount. I don't know if the
 # CMAL150 has the same issue (I haven't seen it), but to be safe we include the
@@ -479,7 +478,6 @@ EOF
 
 ```
 
-
 ### Cleanup
 
 Some of this is helpful, some could probably be omitted
@@ -487,11 +485,6 @@ Some of this is helpful, some could probably be omitted
 ```
 # Get rid of leftover install files
 apt clean
-
-# these should be moved up to their respective install sections
-rm -rf /root/goaccess-*
-rm -rf /root/moodle-*
-rm -rf /root/kiwix-tools*
 
 rm -rf /root/files
 rm -rf /.Trash-0
@@ -517,80 +510,105 @@ rm /root/.wget-hsts
 rm /root/rachel-scripts/files/rachel-autoinstall.*
 
 # if you want to clear out freespace (makes zipped filesystem smaller)
-cat /dev/zero > /root/zerofile; rm /root/zerofile
-
-
-```
-
-### Fix Size
-
-Before expanding the USB size as described below, I tried shrinking some videos in the included
-modules. From the modules directory (on my Mac):
+cat /dev/zero > /zerofile; rm /zerofile
 
 ```
-tar -xzvf modules-5.0.0.tar.gz
-cd modules
 
-ffmpeg -i en-datapost/content/video/about_datapost.mp4 en-datapost/content/video/about_datapost.small.mp4
-mv en-datapost/content/video/about_datapost.small.mp4 en-datapost/content/video/about_datapost.mp4
+### Making a Clonzilla Image
 
-for i in en-moodle/vids/*.mp4; do ffmpeg -i "$i" "${i%.*}.small.mp4"; done
-for i in en-moodle/vids/*.small.mp4; do mv "$i" "${i%.*.*}.mp4"; done
-# fix a typo
-en-moodle/vids/25\ Forum\ 3\ .1.mp4 en-moodle/vids/25\ Forum\ 3.1.mp4
-sed -i'' -e '/25 Forum/s/3 .1/3.1/' en-moodle/vids/index.html
+After you have a version of RACHEL working to your satisfaction, you need to shut it down cleanly
+and take an image using Clonezilla. The details are a bit to involved to include here, but basically
+you make a Clonezilla USB, boot with that, choose "To RAM", then have it clone the whole eMMC. You'll
+end up with an image used in the next step, which will restore the device to a known state.
 
-ffmpeg -i en-local_content/intro.mp4 en-local_content/intro.small.mp4
-mv en-local_content/intro.small.mp4 en-local_content/intro.mp4
-# remove cruft
-rm en-local_content/CAP3_old.png 
+Note that isn't all that needs to be done -- the production and recvoery USBs described in the next
+sections have a number of scripts that have to run to set stuff up that isn't part of cloning. Such as
+the giant media drive and moving some directories there, configuration that is different from machine
+to machine, etc. Those things happen in the USB's recovery.sh, firstboot.py, and whatever config script
+is pulled from the production server.
 
-cd ..
-tar --no-xattrs -czvf modules-5.0.0b.tar.gz modules
+### Making the Production USB
 
-# if all went well
-mv modules-5.0.0b.tar.gz modules-5.0.0.tar.gz
-```
+Requirements:
 
-The above saved ~289M on the gz file. Not critical, but why not. 
+* 4GB USB drive
+* Downloaded Clonezilla 3.1.3
+* Clonzilla image of a working RACHEL5 (as built above)
+* jfield's Mac (some of the files listed are only there for now)
 
-### Making the USB
-
-XXX this is not accurate -- for some reason there are boot problems when you
-XXX make a smaller disk like this -- for now we just use a physical 4GB USB
-XXX and partition the whole thing
-
-The 5.x.x USB (~2.6GB) is larger than the 4.x.x (~2.3GB). Assuming we are building
-and imaging a drive larger than that, you can set up the USB as so on Mac OS:
-(replace diskXX with your USB's number)
-
-```diskutil partitionDisk /dev/diskXX MBR FAT32 RACHEL_500P 3.8G FREE UNUSED R```
-
-This creates a partition which should have plenty for RACHEL 5 and logs, and will
-fit on any 4GB USB.
-
-After copying clonezilla 3.1.3 files, copying everything into recovery, adding OPTIONS, LOG,
-and INSTRUCTIONS directories, and installing our grub.cfg, I ran:
-
-```dot_clean -mv /Volumes/RACHEL_500P```
-
-Then I moved to Linux to set it as bootable. However, mtools was needed -- so:
-
-```apt install mtools```
-
-then:
+Here are the steps (on a Mac):
 
 ```
+# partition and format the USB
+# (replace ## with the drive number as shown in df or Disk Utility)
+diskutil partitionDisk /dev/disk## MBR FAT32 RACHEL_500P R```
+
+# install the Clonzilla system
+cd /Volumes/RACHEL_500P
+unzip ~/RACHEL5/clonezilla-live-3.1.3-16-i686.zip -d .
+
+# create some directories
+touch .metadata_never_index # stops Mac's spotlight indexing
+mkdir LOG INSTRUCTIONS
+mkdir -p OPTIONS/ENABLED
+touch OPTIONS/ENABLED/00_PRODUCTION.txt
+mkdir -p recovery/fs/IMAGE
+
+# put our stuff in place
+cp ~/RACHEL5/grub-5.0.0.cfg boot/grub/grub.cfg
+cp ~/RACHEL5/recovery-5.0.0.sh recovery/recovery.sh
+cp ~/RACHEL5/recovery.png-production-5.0.0.png recovery/recovery.png
+cp ~/RACHEL5/recoveryfiles-5.0.0/* recovery/fs/
+cp -r ~/RACHEL5/snapshots/rachel-5.0RC/* recovery/fs/IMAGE
+
+# tidy up
+cd /Volumes
+dot_clean -mv RACHEL_500P
+rm -rf RACHEL_500P/.Trashes RACHEL_500P/.fseventsd RACHEL_500P/.Spotlight-V100
+diskutil unmountDisk RACHEL_500P
+```
+
+The USB needs to be set as bootable, which is most easily done on the Linux side,
+so put it in the CMAL150 and do the following:
+
+```
+# i needed to add this (should add on the RACHEL img)
+apt install mtools
+# check mount point
 cd /media/root/RACHEL_500P/utils/linux
 bash makeboot.sh /dev/sdb1
+# hit "y" a bunch of times
+umount /dev/sdb1
 ```
 
-Hit "y" a bunch of times and you should be good.
+Lastly, you bring the USB back to the Mac and do this:
 
+```
+diskutil unmountDisk /dev/disk##
+sudo bash
+dd -bs=1m if=/dev/rdisk## of=~/RACHEL5/RACHEL_500P.img conv=sync
+gzip ~/RACHEL5/RACHEL_500P.img
+```
 
-Later when when you want to make a USB from an image on the mac you can do this:
+And that should be it.
 
-```sudo asr restore --source RACHEL_500P.dmg --target /Volumes/RACHEL_500P --erase```
+NOTE: I was unable to create a bootable USB when trying to use a partition size
+smaller than the USB size -- that is, the following did not work:
+
+```diskutil partitionDisk /dev/disk## MBR FAT32 RACHEL_500P 4G . UNUSED R```
+
+Instead I just used a physical 4GB USB drive.
+
+### Making the Recovery USB
+
+Note that if you want to do a "recovery" version instead of the "production"
+version described above, you would not create the "00_PRODUCTION.txt" file in OPTIONS/ENABLED
+but instead:
+
+```touch OPTIONS/01_CHECK_DRIVE.txt OPTIONS/02_RESET_DRIVE.txt```
+
+We also take the extra effort to use the recovery-5.0.0.png, and then hide all
+the directories under Windows except INSTRUCTIONS, LOGS, and OPTIONS.
 
 ### Additional Changes
 
@@ -600,24 +618,11 @@ Namely, the production USB version of firstboot.py includes the code to connect 
 
 Both versions are now included in my recoveryfiles-5.0.0 which needs to get checked in here eventually.
 
-### Research
+### Other
 
-```
-# put these in place
-/etc/rachelinstaller-version
-/etc/datapost-version
+Here are some things I considered while making the USB
 
-better way to manage versioning numbers in recovery.sh (encodes 
-
-apache2 not running (ok? do we need nginx hub.conf?)
-looks like apache2 is gone from rachel 4 (good? one webserver is plenty, thank you)
-
-no longer use /root/rachel-scripts/rachelStartup.sh ... is that OK?
-now use /etc/rachel/boot/ ... but it just does the firstboot.sh stuff
-
-are we using /var/kiwix/rachelKiwixStart.sh or /root/rachel-scripts/rachelKiwixStart.sh?
-seems the first one is in the /etc/rc*.d files? is the second a boondoggle?
-
+Do we need a better way to manage versioning numbers in recovery.sh, /etc/... contentshell, etc.
 
 # some modules need to be updated to understand latest kiwix:
 kn-wikipedia
@@ -640,38 +645,45 @@ Datapost   : "Register" uses admin/common.php for auth screen, but logo is broke
 
 emule service doesn't show up with service --status-all but it is running fine if you do service emule status
 
-we should add the rc.local changes to the image and remove it from recovery.sh
+we should add the rc.local changes in recovery.sh to the image
 
-nicer MOTD on RACHEL 4
+we should add the MOTD stuff in recvoery.sh to the image
 
-"logs" user created by datapost -- su to logs, crontab -e to see the cron entry
+we can improve these goaccess stats by configuring it to ignore javascript, css, and such
 
-```
-### if you're just tweaking post 5.0.0-RC
+we should look into ```kiwix-serve --verbose``` which gives "a few logs" ... enough to provide stats? that would be nice.
 
-```
-# pre-image
-Do motd stuff
-# post image
-Fix firstboot.py in the recovery directory
-# i'm trying to update kolibri -- thought I needed to update python but we actually already have python 3.5.2 which should work
-# so i got a deb of kolibri from their site (turned out to be 0.17.1
-wget https://learningequality.org/r/kolibri-deb-latest
-# and more or less followed instructions here:
-https://kolibri.readthedocs.io/en/latest/install/ubuntu-debian.html
-# but it was:
-mv kolibri-deb-latest kolibri-deb-latest.deb
-dpkg -i kolibri-deb-latest.deb
-# no, that didn't work (wants python 3.6+) so instead:
-pip install kolibri==0.16.2
-# meh, that worked to install but it wouldn't start with either python 2.7 or 3.5 (the versions we have)
-```
+The admin portal (port 8080) runs on uhttpd (migrate to nginx?)
 
-OK further research indicates you can't upgrade python past 3.5 on Ubuntu 16, even with non-standard
-repositories. Kolibri > 0.15 requries Python 3.6+ so that's that.
-
- Probably we should upgrade everything to Ubuntu 20 and forget about the wifi light.
+# what sends logs via datapost
+the "logs" user created by datapost -- su to logs, crontab -e to see the cron entry
 
 
+# reduce en-datapost size:
 
 ```
+ffmpeg -i en-datapost/content/video/about_datapost.mp4 en-datapost/content/video/about_datapost.small.mp4
+mv en-datapost/content/video/about_datapost.small.mp4 en-datapost/content/video/about_datapost.mp4
+```
+
+# reduce en-moodle size:
+
+```
+for i in en-moodle/vids/*.mp4; do ffmpeg -i "$i" "${i%.*}.small.mp4"; done
+for i in en-moodle/vids/*.small.mp4; do mv "$i" "${i%.*.*}.mp4"; done
+# fix a typo
+en-moodle/vids/25\ Forum\ 3\ .1.mp4 en-moodle/vids/25\ Forum\ 3.1.mp4
+sed -i'' -e '/25 Forum/s/3 .1/3.1/' en-moodle/vids/index.html
+```
+
+# reduce en-local_content size:
+```
+ffmpeg -i en-local_content/intro.mp4 en-local_content/intro.small.mp4
+mv en-local_content/intro.small.mp4 en-local_content/intro.mp4
+# remove cruft
+rm en-local_content/CAP3_old.png 
+```
+
+The above size removal items *were* included on RACHEL_500P -- but I did not change the modules on our server
+so if they get reinstalled or the USB gets recreated you'll get another 289M of stuff
+
