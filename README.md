@@ -21,7 +21,7 @@ LED on the CMAL 150. The WiFi LED is operated through ath10k drivers that are im
 as proprietary kernel modules. Any upgrades will include some kernal upgrades that seem
 to disable this driver.
 
-# The Build Process
+## The Build Process
 
 Start with a bare CMAL 150 as provided by ECS or a cloned reinstall of same.
 
@@ -93,7 +93,7 @@ reboot
 rsync -av jfield@192.168.x.x:/Volumes/Master/RACHEL/CAP3/rachel-plus-v3/files/ /root/files/
 ```
 
-### Configure nginx / php-fpm
+## Configure nginx / php-fpm
 
 ```
 # install some dependencies
@@ -132,7 +132,7 @@ service nginx restart
 
 ```
 
-### Install RACHEL contentshell
+## Install RACHEL contentshell
 
 ```
 # XXX The version in github is currently not updated. It should be.
@@ -144,7 +144,7 @@ rsync -av "jfield@192.168.x.x:~/RACHEL5/contentshell-4.1.2/" /media/RACHEL/rache
 
 At this point, you should be able to go to http://192.168.88.1 and see an empty RACHEL front page
 
-### Install Stats Package
+## Install Stats Package
 
 ```
 cd
@@ -164,7 +164,7 @@ rm -rf goaccess-*
 
 ```
 
-### Install DataPost
+## Install DataPost
 
 Based on the [complete instructions here](https://github.com/worldpossible/wiki-datapost/wiki/Installing-eMule-on-a-Rachel-Plus)
 we did the following:
@@ -240,7 +240,7 @@ service start emule
 # XXX: Romeo says there may be problems with the server at the moment, so moving on
 ```
 
-### Install Kolibri
+## Install Kolibri
 
 ```
 add-apt-repository ppa:learningequality/kolibri
@@ -261,7 +261,7 @@ service kolibri start
 
 ```
 
-### Install KA-Lite
+## Install KA-Lite
 
 ```
 # needed for dpkg installation
@@ -295,7 +295,7 @@ kalite start
 ```
 
 
-### Install Kiwix
+## Install Kiwix
 
 ```
 # install from web
@@ -329,7 +329,7 @@ service kiwix start
 
 ```
 
-### Install Moodle
+## Install Moodle
 
 Newer versions of Moodle require newer versions of PHP. It may take some surgery to install another PHP
 and all required libaries and such without causing any conflicts with the system PHP (stuck at 7.0), so
@@ -428,7 +428,7 @@ Short name: "moodle"
 
 ```
 
-### Misc Configuration
+## Misc Configuration
 
 ```
 # this is used by the recovery USB in the recover.sh script
@@ -478,7 +478,7 @@ EOF
 
 ```
 
-### Cleanup
+## Cleanup
 
 Some of this is helpful, some could probably be omitted
 
@@ -514,7 +514,7 @@ cat /dev/zero > /zerofile; rm /zerofile
 
 ```
 
-### Making a Clonzilla Image
+## Making a Clonzilla Image
 
 After you have a version of RACHEL working to your satisfaction, you need to shut it down cleanly
 and take an image using Clonezilla. The details are a bit to involved to include here, but basically
@@ -527,7 +527,7 @@ the giant media drive and moving some directories there, configuration that is d
 to machine, etc. Those things happen in the USB's recovery.sh, firstboot.py, and whatever config script
 is pulled from the production server.
 
-### Making the Production USB
+## Making the Production USB
 
 Requirements:
 
@@ -599,7 +599,7 @@ smaller than the USB size -- that is, the following did not work:
 
 Instead I just used a physical 4GB USB drive.
 
-### Making the Recovery USB
+## Making the Recovery USB
 
 Note that if you want to do a "recovery" version instead of the "production"
 version described above, you would not create the "00_PRODUCTION.txt" file in OPTIONS/ENABLED
@@ -610,7 +610,7 @@ but instead:
 We also take the extra effort to use the recovery-5.0.0.png, and then hide all
 the directories under Windows except INSTRUCTIONS, LOGS, and OPTIONS.
 
-### Additional Changes
+## Additional Changes
 
 After delivering a RC (release candidate) there were a few items that needed to be changed.
 First, I discovered that /etc/rachel/install/firstboot.py differs between recovery and production USB.
@@ -618,30 +618,30 @@ Namely, the production USB version of firstboot.py includes the code to connect 
 
 Both versions are now included in my recoveryfiles-5.0.0 which needs to get checked in here eventually.
 
-### Other
+## Other
 
 Here are some things I considered while making the USB
 
 Do we need a better way to manage versioning numbers in recovery.sh, /etc/... contentshell, etc.
 
-# some modules need to be updated to understand latest kiwix:
-kn-wikipedia
+Some modules need to be updated to understand latest kiwix: kn-wikipedia
 
-# some modules should be indexed and made into a searchable zim module:
-en-w3schools
+Some modules should be indexed and made into a searchable zim module: en-w3schools
 
-# possible tweaks
-Turn it in : make teacher login submit when you hit enter on password
-           : no confirm on delete?
+Some possible tweaks:
 
-File Share : no way to delete files? 
-           : no security for uploading?
-           : combine with Turn it in? Or not (but improve?)
-           : or just lose this module?
+Turn it in :
+* make teacher login submit when you hit enter on password
+* no confirm on delete?
 
-Datapost   : "Register" uses admin/common.php for auth screen, but logo is broken
-             because the path is relative and the dir is different (this is hardcoded
-             in common.php authorized()
+File Share :
+* no way to delete files? 
+* no security for uploading?
+* combine with Turn it in? Or not (but improve?)
+* or just lose this module?
+
+Datapost :
+* "Register" uses admin/common.php for auth screen, but logo is broken because the path is relative and the dir is different (this is hardcoded in common.php authorized()
 
 emule service doesn't show up with service --status-all but it is running fine if you do service emule status
 
