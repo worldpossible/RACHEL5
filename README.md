@@ -66,7 +66,8 @@ vi /root/.ssh/authorized_keys
 ```
 # 192.168.88.1 is less likely to conflict with existing networks than 192.168.1.1
 # It's also all over the RACHEL documentation
-# we used to also edit some nodogsplash (captive WiFi) files, but it seems unnecessary on this version
+# we used to also edit some nodogsplash (captive WiFi) files,
+# but it seems unnecessary on this version
 perl -pi -e 's/192\.168\.1\./192.168.88./g' \
     /etc/config/dhcp \
     /etc/config/network
@@ -182,7 +183,8 @@ sed -i '/php7.1-fpm.sock/ s/php7.1/php7.0/' /etc/nginx/sites-available/rachel.ng
 service nginx restart
 # the above happens when install_emulewebserver.sh copies over config/nginx/sites-available/rachel.nginx.conf
 
-# XXX we should also stop datapost from inserting the webmail link because we end up with two:
+# XXX we should also stop datapost from inserting the webmail link
+# because we end up with two:
 sed -i '0,/WEBMAIL/{/WEBMAIL/d}' /media/RACHEL/rachel/index.php
 # the above takes place in /opt/emulewebservice/bin/install_emulewebserver.sh
 
@@ -228,15 +230,17 @@ service start emule
 # sending a message remote-to-rachel did not work -- android did not pick up the bundle
 # i think i need to register the device
 # XXX: on the register link on RACHEL there is a missing icon
-# XXX: no indication which fields are required (oh, it's all ... link to a gps tool? link to a default or choosable icon?)
+# XXX: no indication which fields are required (oh, it's all ... link to a gps tool?
+# XXX: link to a default or choosable icon?)
 # XXX: all data lost if you submit with missing info
 # XXX: when done, you get a back button that takes you to the same blank form
 # Note: admin password: grep admin /opt/emulewebservice/node/datapost-admin/app.js
 # XXX: no way to see registration data? can you change by overwriting?
 
 # android app (i got it from datapost.site, not RACHEL device):
-# XXX: initial page doesn't inclue sync buttons (shows profile) - you have to go to menu > home
-# XXX: even after sending a reply from my gmail address, the app says there is "no bundle to pick up"
+# XXX: initial page doesn't inclue sync buttons (shows profile) - you have to go
+# XXX: to menu > home even after sending a reply from my gmail address, the app
+# XXX: says there is "no bundle to pick up".
 # XXX: Romeo says there may be problems with the server at the moment, so moving on
 ```
 
@@ -311,21 +315,24 @@ rm -rf kiwix-tools*
 /var/kiwix/bin/kiwix-serve -V | grep kiwix-tools | cut -d ' ' -f2 > /etc/kiwix-version
 
 # XXX I guess there's been a change where kiwix doesn't need a separate index file?
-# so we use a newer version of rachelKiwixStart.sh from kn-wikipedia (I'm sure it's elsewhere as well :)
+# so we use a newer version of rachelKiwixStart.sh from kn-wikipedia
+# (I'm sure it's elsewhere as well :)
 cp /root/files/rachelKiwixStart.sh /var/kiwix/
 
 # this allows kiwix to run and show an informative page even if there
 # are no modules installed
 cp /root/files/empty.zim /var/kiwix/
 
-# this is also changed (and available in kn-wikipedia) to point to a better location for the startup script
+# this is also changed (and available in kn-wikipedia) to point to a
+# better location for the startup script
 cp /root/files/init-kiwix-service /etc/init.d/kiwix
 systemctl daemon-reload
 chmod +x /etc/init.d/kiwix 
 update-rc.d kiwix defaults
 service kiwix start
 
-# XXX given how much kiwix has changed, there may be some modules that need to be updated? 
+# XXX given how much kiwix has changed, there may be some modules
+# that need to be updated? 
 
 ```
 
@@ -447,7 +454,8 @@ kalite --version > /etc/kalite-version
 # lots of tweaks were done to contentshell to fix minor differences with between
 # the CMAL100/CMAL150 but those will be checked in to github as v5.0.0
 
-# install php stemming (what uses this now? the modules i checked included their own stemmer?)
+# install php stemming (what uses this now?
+# the modules i checked included their own stemmer?)
 apt -y install php7.0-dev
 yes yes | pecl install -O stem-2.0.0.tgz
 echo extension=stem.so > /etc/php/7.0/mods-available/stem.ini
