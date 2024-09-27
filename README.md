@@ -514,7 +514,7 @@ cat /dev/zero > /zerofile; rm /zerofile
 
 ```
 
-## Making a Clonzilla Image
+## Making a Clonezilla Image
 
 After you have a version of RACHEL working to your satisfaction, you need to shut it down cleanly
 and take an image using Clonezilla. The details are a bit to involved to include here, but basically
@@ -610,17 +610,14 @@ but instead:
 We also take the extra effort to use the recovery-5.0.0.png, and then hide all
 the directories under Windows except INSTRUCTIONS, LOGS, and OPTIONS.
 
-## Additional Changes
+## Afterhoughts / TODOs
+
+Here are some things I considered while making the USB
 
 After delivering a RC (release candidate) there were a few items that needed to be changed.
 First, I discovered that /etc/rachel/install/firstboot.py differs between recovery and production USB.
 Namely, the production USB version of firstboot.py includes the code to connect to the production server.
-
 Both versions are now included in my recoveryfiles-5.0.0 which needs to get checked in here eventually.
-
-## Other
-
-Here are some things I considered while making the USB
 
 Do we need a better way to manage versioning numbers in recovery.sh, /etc/... contentshell, etc.
 
@@ -655,18 +652,18 @@ we should look into ```kiwix-serve --verbose``` which gives "a few logs" ... eno
 
 The admin portal (port 8080) runs on uhttpd (migrate to nginx?)
 
-# what sends logs via datapost
-the "logs" user created by datapost -- su to logs, crontab -e to see the cron entry
+What sends logs via datapost?
+* the "logs" user created by datapost -- su to logs, crontab -e to see the cron entry
 
 
-# reduce en-datapost size:
+To reduce en-datapost size:
 
 ```
 ffmpeg -i en-datapost/content/video/about_datapost.mp4 en-datapost/content/video/about_datapost.small.mp4
 mv en-datapost/content/video/about_datapost.small.mp4 en-datapost/content/video/about_datapost.mp4
 ```
 
-# reduce en-moodle size:
+To reduce en-moodle size:
 
 ```
 for i in en-moodle/vids/*.mp4; do ffmpeg -i "$i" "${i%.*}.small.mp4"; done
@@ -676,7 +673,7 @@ en-moodle/vids/25\ Forum\ 3\ .1.mp4 en-moodle/vids/25\ Forum\ 3.1.mp4
 sed -i'' -e '/25 Forum/s/3 .1/3.1/' en-moodle/vids/index.html
 ```
 
-# reduce en-local_content size:
+To reduce en-local_content size:
 ```
 ffmpeg -i en-local_content/intro.mp4 en-local_content/intro.small.mp4
 mv en-local_content/intro.small.mp4 en-local_content/intro.mp4
