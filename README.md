@@ -209,7 +209,7 @@ npm install -g n
 n 6.17.1
 rm /usr/bin/nodejs
 ln -s /usr/local/bin/node /usr/bin/nodejs
-service start emule
+service emule start
 
 # XXX emule stays up, but we still don't see a working datapost... researching...
 # ok, that was just because I was accessing the device through my own /etc/hosts
