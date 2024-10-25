@@ -649,6 +649,7 @@ Datapost :
 * "Register" uses admin/common.php for auth screen, but logo is broken because the path is relative and the dir is different (this is hardcoded in common.php authorized()
 
 emule service doesn't show up with service --status-all but it is running fine if you do service emule status
+-- ok, this is because emul.service is in /etc/systemd/system (systemd) and is not an /etc/init.d (sysvinit) script
 
 we should add the rc.local changes in recovery.sh to the image
 
