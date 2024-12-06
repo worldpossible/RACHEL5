@@ -635,14 +635,14 @@ the directories under Windows except INSTRUCTIONS, LOGS, and OPTIONS.
 ```
 diskutil unmountDisk /Volumes/YOUR_USB_NAME
 # the above command will tell you the disk# wich you must insert below
-time dd bs=1m if=/dev/rdisk# of=RACHEL_500P.img conv=sync
+sudo time dd bs=1m if=/dev/rdisk# of=RACHEL_500P.img conv=sync
 ```
 
 ### Make a USB from the disk image
 ```
 diskutil unmountDisk /Volumes/YOUR_USB_NAME
 # the above command will tell you the disk# wich you must insert below
-time dd bs=1m if=RACHEL_500P.img of=/dev/rdisk# conv=sync
+sudo time dd bs=1m if=RACHEL_500P.img of=/dev/rdisk# conv=sync
 ```
 
 ## Afterhoughts / TODOs
