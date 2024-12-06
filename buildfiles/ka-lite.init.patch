@@ -1,0 +1,36 @@
+*** ka-lite	2018-06-01 00:03:40.705391441 +0000
+--- ka-lite.new	2018-06-01 00:03:30.909391748 +0000
+***************
+*** 21,26 ****
+--- 21,41 ----
+  	exit 1
+  fi
+  
++ ## Waits for /.data to be mounted -- RACHEL/jfield
++ wait_for_mount() {
++     tries=0
++     while ! mountpoint -q /.data
++     do
++         if [[ $tries -gt 10 ]]; then
++             "ERROR: /.data/RACHEL/rachel not mounted after 10 tries... giving up."
++             exit 1;
++         fi
++         echo "WARNING: /.data/RACHEL/rachel not mounted... retrying in 3 secs."
++         sleep 3
++     done
++     echo "INFO: /.data/RACHEL/rachel mounted... starting kiwix."
++ }
++ 
+  PATH=/bin:/usr/bin:/sbin:/usr/sbin
+  
+  . /lib/lsb/init-functions
+***************
+*** 29,34 ****
+--- 44,50 ----
+  
+  case "$1" in
+    start)
++     wait_for_mount
+      # run ka-lite as another user, the one who generated this file
+      su $KALITE_USER -s /bin/sh -c "$KALITE_COMMAND start $KALITE_OPTS"
+      ;;

@@ -89,9 +89,11 @@ reboot
 ## Get Configuration Files
 
 ```
-# XXX This needs to be updated to a github pull from this repository
-# XXX currently it's an rsync from my desktop
-rsync -av jfield@192.168.x.x:/Volumes/Master/RACHEL/CAP3/rachel-plus-v3/files/ /root/files/
+cd /root
+git clone https://github.com/worldpossible/RACHEL5.git
+mv RACHEL5/buildfiles .
+rsync -av rsync://dev.worldpossible.org/rachel5/buildfiles/ ./buildfiles/
+
 ```
 
 ## Configure nginx / php-fpm
@@ -136,11 +138,11 @@ service nginx restart
 ## Install RACHEL contentshell
 
 ```
-# XXX The version in github is currently not updated. It should be.
-# XXX But for now we use a copy from the 4.1.2 recovery USB rsync'd from my desktop
 mkdir /.data/RACHEL
 ln -s /.data/RACHEL /media/RACHEL
-rsync -av "jfield@192.168.x.x:~/RACHEL5/contentshell-4.1.2/" /media/RACHEL/rachel/
+git clone --branch v5.0.0 --depth 1 https://github.com/worldpossible/contentshell.git
+rm -rf contentshell/.git
+mv contentshell /media/RACHEL/rachel
 ```
 
 At this point, you should be able to go to http://192.168.88.1 and see an empty RACHEL front page
@@ -172,7 +174,8 @@ we did the following:
 
 ```
 cd /opt
-# XXX for git clone to work you have to put your github ssh keys in /root/.ssh
+# XXX for git clone to work on a private repository you have to put your
+# github ssh keys in /root/.ssh (or do ssh-kegen and add your /root/.ssh key to github)
 git clone git@github.com:worldpossible/internetdelivered-emule-webservice.git emulewebservice
 cd emulewebservice/bin/
 ./install.sh
@@ -190,7 +193,9 @@ sed -i '0,/WEBMAIL/{/WEBMAIL/d}' /media/RACHEL/rachel/index.php
 
 # At this point webmail should work, but we have no module to show
 # to get that, we install some default modules:
-rsync -av "jfield@192.168.x.x:~/RACHEL5/modules-4.1.2/" /media/RACHEL/rachel/modules
+rsync -av rsync://dev.worldpossible.org/rachel5/recoveryfiles/modules-5.0.0.tar.gz /media/RACHEL/rachel
+tar -xzvf /media/RACHEL/rachel/modules-5.0.0.tar.gz -C /media/RACHEL/rachel/
+rm /media/RACHEL/rachel/modules-5.0.0.tar.gz
 
 # Add bold to the DataPost "not configured" message:
 sed -i '/<p>DataPost is not/s/<p>/<p><b>/' /media/RACHEL/rachel/modules/en-datapost/rachel-index.php
@@ -325,7 +330,7 @@ cp /root/files/empty.zim /var/kiwix/
 
 # this is also changed (and available in kn-wikipedia) to point to a
 # better location for the startup script
-cp /root/files/init-kiwix-service /etc/init.d/kiwix
+cp /root/buildfiles/init-kiwix-service /etc/init.d/kiwix
 systemctl daemon-reload
 chmod +x /etc/init.d/kiwix 
 update-rc.d kiwix defaults
@@ -365,7 +370,7 @@ CREATE DATABASE moodle DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,CREATE TEMPORARY TABLES,DROP,INDEX,ALTER ON moodle.* TO 'moodleuser'@'localhost' IDENTIFIED BY 'Rachel+1';
 
 # some tweaks to the config
-cat /root/files/mysql-additions.txt >> /etc/mysql/my.cnf
+cat /root/buildfiles/mysql-additions.txt >> /etc/mysql/my.cnf
 
 # move the data directory
 service mysql stop
@@ -457,7 +462,7 @@ kalite --version > /etc/kalite-version
 # install php stemming (what uses this now?
 # the modules i checked included their own stemmer?)
 apt -y install php7.0-dev
-yes yes | pecl install -O stem-2.0.0.tgz
+yes yes | pecl install -O /root/buildfiles/stem-2.0.0.tgz
 echo extension=stem.so > /etc/php/7.0/mods-available/stem.ini
 ln -s /etc/php/7.0/mods-available/stem.ini /etc/php/7.0/cli/conf.d/30-stem.ini
 ln -s /etc/php/7.0/mods-available/stem.ini /etc/php/7.0/fpm/conf.d/30-stem.ini
@@ -472,9 +477,9 @@ systemctl get-default
 # start -- we patched the init scripts to wait for the mount. I don't know if the
 # CMAL150 has the same issue (I haven't seen it), but to be safe we include the
 # same patches here. Patches created with: diff -Naur file.orig file.edit
-patch /etc/init.d/ka-lite -i ka-lite.init.patch
-patch /etc/init.d/kolibri -i kolibri.init.patch
-patch /etc/init.d/mysql -i mysql.init.patch
+patch /etc/init.d/ka-lite -i /root/buildfiles/ka-lite.init.patch
+patch /etc/init.d/kolibri -i /root/buildfiles/kolibri.init.patch
+patch /etc/init.d/mysql -i /root/buildfiles/mysql.init.patch
 # kiwix already has the wait code in kiwix-init-service
 
 # we want a nicer MOTD
@@ -494,7 +499,8 @@ Some of this is helpful, some could probably be omitted
 # Get rid of leftover install files
 apt clean
 
-rm -rf /root/files
+rm -rf /root/RACHEL5
+rm -rf /root/buildfiles
 rm -rf /.Trash-0
 rm -rf /tmp/firstboot.log
 rm -rf /tmp/sortmods*
@@ -525,9 +531,10 @@ cat /dev/zero > /zerofile; rm /zerofile
 ## Making a Clonezilla Image
 
 After you have a version of RACHEL working to your satisfaction, you need to shut it down cleanly
-and take an image using Clonezilla. The details are a bit to involved to include here, but basically
-you make a Clonezilla USB, boot with that, choose "To RAM", then have it clone the whole eMMC. You'll
-end up with an image used in the next step, which will restore the device to a known state.
+and take an image using Clonezilla. The details are a bit too involved to include here, but basically
+you make a Clonezilla USB, boot with that, choose "To RAM", then have it clone the whole eMMC (clonedisk).
+You'll end up with a Clonzilla  image directory used in the next step, which will restore the device to a
+known state.
 
 Note that isn't all that needs to be done -- the production and recvoery USBs described in the next
 sections have a number of scripts that have to run to set stuff up that isn't part of cloning. Such as
@@ -542,7 +549,6 @@ Requirements:
 * 4GB USB drive
 * Downloaded Clonezilla 3.1.3
 * Clonzilla image of a working RACHEL5 (as built above)
-* jfield's Mac (some of the files listed are only there for now)
 
 Here are the steps (on a Mac):
 
@@ -562,12 +568,19 @@ mkdir -p OPTIONS/ENABLED
 touch OPTIONS/ENABLED/00_PRODUCTION.txt
 mkdir -p recovery/fs/IMAGE
 
+# get some necessary files
+git clone https://github.com/worldpossible/RACHEL5.git ~/RACHEL5 
+rsync -av rsync://dev.worldpossible.org/rachel5/recoveryfiles/ ~/RACHEL5/recoveryfiles/
+rm ~/RACHEL5/recoveryfiles/README.md
+
 # put our stuff in place
-cp ~/RACHEL5/grub-5.0.0.cfg boot/grub/grub.cfg
-cp ~/RACHEL5/recovery-5.0.0.sh recovery/recovery.sh
-cp ~/RACHEL5/recovery.png-production-5.0.0.png recovery/recovery.png
-cp ~/RACHEL5/recoveryfiles-5.0.0/* recovery/fs/
-cp -r ~/RACHEL5/snapshots/rachel-5.0RC/* recovery/fs/IMAGE
+mv ~/RACHEL5/recoveryfiles/grub-5.0.0.cfg boot/grub/grub.cfg
+mv ~/RACHEL5/recoveryfiles/recovery-5.0.0.sh recovery/recovery.sh
+mv ~/RACHEL5/recoveryfiles/recoveryfiles-5.0.0/* recovery/fs/
+
+# this is copying the Clonzilla image directory mentioned above
+# -- but making the Clonezilla image is up to you
+cp -r ~/Clonezilla_Image_of_RACHEL/* recovery/fs/IMAGE
 
 # tidy up
 cd /Volumes
@@ -649,11 +662,11 @@ Datapost :
 * "Register" uses admin/common.php for auth screen, but logo is broken because the path is relative and the dir is different (this is hardcoded in common.php authorized()
 
 emule service doesn't show up with service --status-all but it is running fine if you do service emule status
--- ok, this is because emul.service is in /etc/systemd/system (systemd) and is not an /etc/init.d (sysvinit) script
+-- ok, this is because emule.service is in /etc/systemd/system (systemd) and is not an /etc/init.d (sysvinit) script
 
 we should add the rc.local changes in recovery.sh to the image
 
-we should add the MOTD stuff in recvoery.sh to the image
+we should add the MOTD stuff in recovery.sh to the image
 
 we can improve these goaccess stats by configuring it to ignore javascript, css, and such
 

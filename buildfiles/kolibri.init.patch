@@ -1,0 +1,36 @@
+*** kolibri	2018-06-04 00:01:04.831117916 +0000
+--- kolibri.new	2018-06-04 00:01:39.547116831 +0000
+***************
+*** 21,26 ****
+--- 21,41 ----
+  	exit 1
+  fi
+  
++ ## Waits for /.data to be mounted -- RACHEL/jfield
++ wait_for_mount() {
++     tries=0
++     while ! mountpoint -q /.data
++     do
++         if [[ $tries -gt 10 ]]; then
++             "ERROR: /.data/RACHEL/rachel not mounted after 10 tries... giving up."
++             exit 1;
++         fi
++         echo "WARNING: /.data/RACHEL/rachel not mounted... retrying in 3 secs."
++         sleep 3
++     done
++     echo "INFO: /.data/RACHEL/rachel mounted... starting kolibri."
++ }
++ 
+  PATH=/bin:/usr/bin:/sbin:/usr/sbin
+  
+  . /lib/lsb/init-functions
+***************
+*** 36,41 ****
+--- 51,57 ----
+  
+  case "$1" in
+    start)
++     wait_for_mount
+      # run ka-lite as another user, the one who generated this file
+      su $KOLIBRI_USER -c "$KOLIBRI_COMMAND start"
+      ;;

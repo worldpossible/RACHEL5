@@ -1,0 +1,32 @@
+--- mysql.orig	2024-09-17 23:54:20.260472042 +0000
++++ mysql	2024-09-17 23:56:11.528433880 +0000
+@@ -52,6 +52,21 @@
+     | cut -d= -f2
+ }
+ 
++## Waits for /.data to be mounted -- RACHEL/jfield
++wait_for_mount() {
++    tries=0
++    while ! mountpoint -q /.data
++    do
++        if [[ $tries -gt 10 ]]; then
++            "ERROR: /.data/RACHEL/rachel not mounted after 10 tries... giving up."
++            exit 1;
++        fi
++        echo "WARNING: /.data/RACHEL/rachel not mounted... retrying in 3 secs."
++        sleep 3
++    done
++    echo "INFO: /.data/RACHEL/rachel mounted... starting kolibri."
++}
++
+ ## Do some sanity checks before even trying to start mysqld.
+ sanity_checks() {
+   # check for config file
+@@ -100,6 +115,7 @@
+ case "${1:-''}" in
+ 
+   'start')
++  wait_for_mount;
+   sanity_checks;
+   # Start daemon
+   log_daemon_msg "Starting MariaDB database server" "mysqld"

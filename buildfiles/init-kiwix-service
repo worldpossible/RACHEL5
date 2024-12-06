@@ -1,0 +1,56 @@
+#!/bin/sh
+
+# Author: Jonathan Field - World Possible
+# Edited: Steve Bashford - World Possible
+# Rev: 1.1 (190912)
+# /etc/init.d/kiwix
+
+### BEGIN INIT INFO
+# Provides:          kiwix
+# Required-Start:    $local_fs $remote_fs $network $syslog $named
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: kiwix server, browse installed RACHEL zim files
+### END INIT INFO
+
+set -e
+
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
+
+## Waits for /.data to be mounted -- RACHEL/jfield
+wait_for_mount() {
+    tries=0
+    while ! mountpoint -q /.data
+    do
+        if [[ $tries -gt 10 ]]; then
+            "ERROR: /.data/RACHEL/rachel not mounted after 10 tries... giving up."
+            exit 1;
+        fi
+        echo "WARNING: /.data/RACHEL/rachel not mounted... retrying in 3 secs."
+        sleep 3
+    done
+    echo "INFO: /.data/RACHEL/rachel mounted... starting kiwix."
+}
+
+case "$1" in
+  start)
+    wait_for_mount
+    bash /var/kiwix/rachelKiwixStart.sh
+    ;;
+  stop)
+    killall kiwix-serve
+    ;;
+  restart)
+    # it kills the old process itself
+    bash /var/kiwix/rachelKiwixStart.sh
+    ;;
+  status)
+    ps aux | grep kiwix-serve | grep -v grep
+    ;;
+  *)
+    # log_success_msg wasn't working - replaced with echo
+    echo "Usage: /etc/init.d/kiwix {start|stop|restart|status}"
+    exit 1
+esac
+
