@@ -227,13 +227,13 @@ service emule start
 # the message: "Server Error: UID MOVE: Mailbox doesn't exist: Trash (0.000 + 0.000 secs)."
 # this was solved by going to "manage folders" and manually adding a folder called "Trash"
 # ... this should be the default, no? Note I found online:
-#  "there os a setting in the Roundcube config file - create_default_folders -
+#  "there is a setting in the Roundcube config file - create_default_folders -
 #  which makes it auto create defailt folders on first login."
 
 # sending a message internally worked
 # sending a message remotely worked
-# sending a message remote-to-rachel did not work -- android did not pick up the bundle
-# i think i need to register the device
+# sending a message remote-to-rachel worked
+
 # XXX: on the register link on RACHEL there is a missing icon
 # XXX: no indication which fields are required (oh, it's all ... link to a gps tool?
 # XXX: link to a default or choosable icon?)
@@ -244,9 +244,7 @@ service emule start
 
 # android app (i got it from datapost.site, not RACHEL device):
 # XXX: initial page doesn't inclue sync buttons (shows profile) - you have to go
-# XXX: to menu > home even after sending a reply from my gmail address, the app
-# XXX: says there is "no bundle to pick up".
-# XXX: Romeo says there may be problems with the server at the moment, so moving on
+# XXX: to menu > home
 ```
 
 ## Install Kolibri
