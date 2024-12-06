@@ -626,8 +626,24 @@ but instead:
 
 ```touch OPTIONS/01_CHECK_DRIVE.txt OPTIONS/02_RESET_DRIVE.txt```
 
-We also take the extra effort to use the recovery-5.0.0.png, and then hide all
+We also take the extra effort to hide all
 the directories under Windows except INSTRUCTIONS, LOGS, and OPTIONS.
+
+## Disk Imaging on Mac
+
+### Make a disk image from the USB
+```
+diskutil unmountDisk /Volumes/YOUR_USB_NAME
+# the above command will tell you the disk# wich you must insert below
+time dd bs=1m if=/dev/rdisk# of=RACHEL_500P.img conv=sync
+```
+
+### Make a USB from the disk image
+```
+diskutil unmountDisk /Volumes/YOUR_USB_NAME
+# the above command will tell you the disk# wich you must insert below
+time dd bs=1m if=RACHEL_500P.img of=/dev/rdisk# conv=sync
+```
 
 ## Afterhoughts / TODOs
 
