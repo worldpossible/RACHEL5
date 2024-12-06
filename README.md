@@ -107,7 +107,7 @@ apt install -y php7.0-cli php7.0-fpm php7.0-sqlite3 sqlite3
 sed -i '/80 default_server/ s/80/8090/' /etc/nginx/sites-available/default
 
 # use our custom website config file
-cp /root/files/rachel.nginx.conf /etc/nginx/sites-available/
+cp /root/buildfiles/rachel.nginx.conf /etc/nginx/sites-available/
 ln -s /etc/nginx/sites-available/rachel.nginx.conf /etc/nginx/sites-enabled/
 
 # make sure everything runs as root so our web admin can do admin-like stuff
@@ -274,19 +274,19 @@ service kolibri start
 # needed for dpkg installation
 apt install -y unzip
 
-dpkg -i /root/files/ka-lite_0.17.4-0ubuntu2_all.deb
+dpkg -i /root/buildfiles/ka-lite_0.17.4-0ubuntu2_all.deb
     # run at startup? yes
     # which user? root
     # confirm? ok
 
 # install contentpacks (everything but videos, I believe) 
-kalite manage retrievecontentpack local en /root/files/contentpacks/en-0.17-fixed.zip
-kalite manage retrievecontentpack local es /root/files/contentpacks/es.zip
-kalite manage retrievecontentpack local fr /root/files/contentpacks/fr.zip
-kalite manage retrievecontentpack local hi /root/files/contentpacks/hi.zip
-kalite manage retrievecontentpack local pt-BR /root/files/contentpacks/pt-BR.zip
-kalite manage retrievecontentpack local pt-PT /root/files/contentpacks/pt-PT.zip
-kalite manage retrievecontentpack local sw /root/files/contentpacks/sw.zip
+kalite manage retrievecontentpack local en /root/buildfiles/contentpacks/en-0.17-fixed.zip
+kalite manage retrievecontentpack local es /root/buildfiles/contentpacks/es.zip
+kalite manage retrievecontentpack local fr /root/buildfiles/contentpacks/fr.zip
+kalite manage retrievecontentpack local hi /root/buildfiles/contentpacks/hi.zip
+kalite manage retrievecontentpack local pt-BR /root/buildfiles/contentpacks/pt-BR.zip
+kalite manage retrievecontentpack local pt-PT /root/buildfiles/contentpacks/pt-PT.zip
+kalite manage retrievecontentpack local sw /root/buildfiles/contentpacks/sw.zip
 
 # move kalite to big partition
 kalite stop
@@ -320,11 +320,11 @@ rm -rf kiwix-tools*
 # XXX I guess there's been a change where kiwix doesn't need a separate index file?
 # so we use a newer version of rachelKiwixStart.sh from kn-wikipedia
 # (I'm sure it's elsewhere as well :)
-cp /root/files/rachelKiwixStart.sh /var/kiwix/
+cp /root/buildfiles/rachelKiwixStart.sh /var/kiwix/
 
 # this allows kiwix to run and show an informative page even if there
 # are no modules installed
-cp /root/files/empty.zim /var/kiwix/
+cp /root/buildfiles/empty.zim /var/kiwix/
 
 # this is also changed (and available in kn-wikipedia) to point to a
 # better location for the startup script
