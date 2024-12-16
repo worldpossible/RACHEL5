@@ -569,7 +569,7 @@ Here are the steps (on a Mac):
 ```
 # partition and format the USB
 # (replace ## with the drive number as shown in df or Disk Utility)
-diskutil partitionDisk /dev/disk## MBR FAT32 RACHEL_500P R```
+diskutil partitionDisk /dev/disk## MBR FAT32 RACHEL_500P R
 
 # install the Clonzilla system
 cd /Volumes/RACHEL_500P
