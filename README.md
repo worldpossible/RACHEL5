@@ -606,6 +606,8 @@ diskutil unmountDisk RACHEL_500P
 The USB needs to be set as bootable, which is most easily done on the Linux side,
 so put it in the CMAL150 and do the following:
 
+XXX this may not be needed? Creating the disk with an MBR may automatically bootable?
+
 ```
 # i needed to add this (should add on the RACHEL img)
 apt install mtools
