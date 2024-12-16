@@ -540,6 +540,22 @@ the giant media drive and moving some directories there, configuration that is d
 to machine, etc. Those things happen in the USB's recovery.sh, firstboot.py, and whatever config script
 is pulled from the production server.
 
+Perhaps most notably is the fact that everything on the /.data/RACHEL directory has to be installed
+during recovery from tar files because that is a separate (large) drive, not the cloned eMMc. The items
+are large and so they are on our [ftp server](https://ftp.worldpossible.org/rachel5/recoveryfiles/)
+rather than github. The items are:
+
+* .kalite -- kalite-0.17.4.tar.gz
+* .kolibri -- kolibri-0.15.12.tar.gz
+* moodle -- moodle-3.6.10.tar.gz
+* moodle-data -- moodle-data-3.6.10.tar.gz
+* mysql -- mysql-10.0.38-MariaDB.tar.gz
+* rachel -- contentshell-5.0.0.tar.gz
+* rachel/modules -- modules-5.0.0.tar.gz
+
+If you change these you need to make a new tar file, and then put that on the recovery USB so it
+can be put back in place at recovery (USB install) time.
+
 ## Making the Production USB
 
 Requirements:
