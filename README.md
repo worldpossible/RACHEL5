@@ -482,7 +482,7 @@ patch /etc/init.d/mysql -i /root/buildfiles/mysql.init.patch
 
 # we want a nicer MOTD
 cat >> /etc/update-motd.d/00-header << EOF
-printf "Welcome to RACHEL-Plus from World Possible \n\n"
+printf "Welcome to RACHEL from World Possible \n\n"
 printf "RACHEL: $(cat /etc/rachelinstaller-version) \n"
 printf "MAC: $(cat /sys/class/net/enp2s0/address) \n"
 EOF
