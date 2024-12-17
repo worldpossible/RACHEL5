@@ -162,13 +162,6 @@ function emmc_config(){
     cp $recovery_files/firstboot.py $emmc_mount/etc/rachel/install/; check
   fi
 
-# we want a nicer MOTD - again, this should be on the image
-cat >> $emmc_mount/etc/update-motd.d/00-header << EOF
-printf "Welcome to RACHEL-Plus from World Possible \n\n"
-printf "RACHEL: \$(cat /etc/rachelinstaller-version) \n"
-printf "MAC: \$(cat /sys/class/net/enp2s0/address) \n"
-EOF
-
   # although the emmc has its own version recorded (and logged above)
   # I think it makes sense to synchronize to this script here:
   echo $version > $emmc_mount/etc/rachelinstaller-version
