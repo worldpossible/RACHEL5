@@ -2,7 +2,7 @@
 #
 # Copyright World Possible 2024
 
-version="5.0.0"
+version="5.1.0"
 
 dir="$(dirname "${BASH_SOURCE[0]}")"
 usb_mount="$(dirname "$(dirname "${BASH_SOURCE[0]}")")"
@@ -434,7 +434,7 @@ function ssd_moodle(){
   local moodle_symlink_path=/media/RACHEL/moodle
   local tar_file_moodle=$recovery_files/moodle-3.6.10.tar.gz
   local tar_file_moodle_data=$recovery_files/moodle-data-3.6.10.tar.gz
-  local tar_file_mysql=$recovery_files/mysql-10.0.38-MariaDB.tar.gz
+  local tar_file_mysql=$recovery_files/mysql-RACHELv5.0.1.tar.gz
   local install=0
 
   if [ ! -d $mysql_dir ]; then
@@ -458,9 +458,11 @@ function ssd_moodle(){
   fi
 
   if [ $install -eq 1 ]; then
-    log "Installing ${tar_file}..."
+    log "Installing ${tar_file_moodle}..."
     tar -xf $tar_file_moodle      -C $rachel_dir; check
+    log "Installing ${tar_file_moodle_data}..."
     tar -xf $tar_file_moodle_data -C $rachel_dir; check
+    log "Installing ${tar_file_mysql}..."
     tar -xf $tar_file_mysql       -C $rachel_dir; check
   else
     log "Moodle installation found. Continuing..."
