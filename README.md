@@ -623,7 +623,7 @@ Lastly, you bring the USB back to the Mac and do this:
 ```
 diskutil unmountDisk /dev/disk##
 sudo bash
-dd -bs=1m if=/dev/rdisk## of=~/RACHEL5/RACHEL_500P.img conv=sync
+dd bs=1m if=/dev/rdisk# of=RACHEL_500P.img conv=sync
 gzip ~/RACHEL5/RACHEL_500P.img
 ```
 
