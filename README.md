@@ -438,6 +438,28 @@ Short name: "moodle"
 
 ```
 
+## Make tar files
+
+You must tar up the following since they are on the big HD -- they will not be part of
+the clonezilla copy and are instead put in place by recovery.sh during USB recovery. These
+tar files are too big to keep in github, so we keep them on the ftp server. But here's what
+you need to tar up:
+
+```
+cd /media/RACHEL
+tar -czvf mysql.tar.gz mysql
+tar -czvf moodle.tar.gz moodle
+tar -czvf moodle-data.tar.gz moodle-data
+tar -czvf kalite.tar.gz .kalite
+tar -czvf kolibri.tar.gz .kolibri
+tar --exclude='modules' -czvf contentshell.tar.tz rachel
+cd rachel
+tar -czvf ../modules.tar.tz modules
+```
+
+After these are made you can transfer them to http://ftp.worldpossible.org/rachel6/recoveryfiles and
+delete them locally.
+
 ## Misc Configuration
 
 ```
@@ -496,6 +518,9 @@ Some of this is helpful, some could probably be omitted
 ```
 # Get rid of leftover install files
 apt clean
+
+# get rid of unused packages
+apt autoremove
 
 rm -rf /root/RACHEL5
 rm -rf /root/buildfiles
