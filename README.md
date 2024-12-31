@@ -671,7 +671,9 @@ but instead:
 ```touch OPTIONS/01_CHECK_DRIVE.txt OPTIONS/02_RESET_DRIVE.txt```
 
 We also take the extra effort to hide all
-the directories under Windows except INSTRUCTIONS, LOGS, and OPTIONS.
+the directories under Windows except INSTRUCTIONS, LOGS, and OPTIONS. You can do
+this on a Mac using `chflags hidden FILENAME` and `chflags nohidden FILENAME`. You
+can also check the hidden status from the command line with `ls -lO` (that's a capital O).
 
 ## Disk Imaging on Mac
 
