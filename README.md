@@ -691,6 +691,12 @@ diskutil unmountDisk /Volumes/YOUR_USB_NAME
 sudo time dd bs=1m if=RACHEL_500P.img of=/dev/rdisk# conv=sync
 ```
 
+### Version Changes
+
+* v5.0.0 - initial working/shipping CMAL150 version
+* v5.1.0 - update PHP 7.0 -> 7.4, include IMathAS tables in MySQL
+* v5.1.1 - fix contenthub upload (/media/uploaded ownership) and throttle rsync
+
 ## Afterhoughts / TODOs
 
 Here are some things I considered while making the USB
@@ -766,3 +772,6 @@ rm en-local_content/CAP3_old.png
 The above size removal items *were* included on RACHEL_500P -- but I did not change the modules on our server
 so if they get reinstalled or the USB gets recreated you'll get another 289M of stuff
 
+There is some confusion/mess with `/media` where the CAP1 & CAP2 mounted the big drive, and `/.data`
+where the CMAL100 and CMAL150 mount the big drive. This should be cleaned up. Right now there's some duplicated/unused
+directories in there and it's not always clear which one is actually being used.
