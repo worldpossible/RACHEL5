@@ -553,13 +553,7 @@ find /var/log -name '*.gz' -delete
 find /var/log -name '*.1' -delete
 for i in $(find /var/log -type f); do cat /dev/null > $i; done
 
-# sanitize history
-:> /home/cap/.bash_history
-:> /home/cap/.viminfo
-:> /root/.viminfo
-rm /root/.mysql_history
-rm /root/.wget-hsts
-:> /root/.bash_history
+rm /.data
 
 # remove any extraneous auto-installer files
 rm /root/rachel-scripts/files/rachel-autoinstall.*
@@ -567,10 +561,20 @@ rm /root/rachel-scripts/files/rachel-autoinstall.*
 # remove install logs and firstboot stuff (it's installed by recovery.sh on the USB)
 rm /etc/rachel/logs/*
 rm /etc/rachel/install/*
- 
+
+# sanitize history
+:> /home/cap/.bash_history
+:> /home/cap/.viminfo
+:> /root/.viminfo
+rm /root/.mysql_history
+rm /root/.wget-hsts
+
 
 # if you want to clear out freespace (makes zipped filesystem smaller)
 cat /dev/zero > /zerofile; rm /zerofile
+
+:> /root/.bash_history
+shutdown -h now
 
 ```
 
