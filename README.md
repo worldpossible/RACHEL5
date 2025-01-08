@@ -487,6 +487,23 @@ printf "RACHEL: $(cat /etc/rachelinstaller-version) \n"
 printf "MAC: $(cat /sys/class/net/enp2s0/address) \n"
 EOF
 
+# this is where RACHEL keeps it's own install & startup scripts
+mkdir /etc/rachel
+mkdir /etc/rachel/boot
+mkdir /etc/rachel/install
+mkdir /etc/rachel/logs
+cp /root/buildfiles/startup.sh /etc/rachel/boot/
+
+# the firstboot.py installer script will be put in place
+# later by recovery.sh on the USB -- this is because the
+# version of firstboot.py varies depending on the installation
+# type (recovery vs. production)
+
+# add the rachel startup script to the
+# machine startup and make sure it's executble
+sed -i '/^touch/i bash /etc/rachel/boot/startup.sh &' /etc/rc.local
+chmod +x /etc/rc.local
+
 ```
 
 ## Make tar files
@@ -537,15 +554,20 @@ find /var/log -name '*.1' -delete
 for i in $(find /var/log -type f); do cat /dev/null > $i; done
 
 # sanitize history
-:> /root/.bash_history
+:> /home/cap/.bash_history
+:> /home/cap/.viminfo
 :> /root/.viminfo
 rm /root/.mysql_history
 rm /root/.wget-hsts
-:> /home/cap/.bash_history
-:> /home/cap/.viminfo
+:> /root/.bash_history
 
 # remove any extraneous auto-installer files
 rm /root/rachel-scripts/files/rachel-autoinstall.*
+
+# remove install logs and firstboot stuff (it's installed by recovery.sh on the USB)
+rm /etc/rachel/logs/*
+rm /etc/rachel/install/*
+ 
 
 # if you want to clear out freespace (makes zipped filesystem smaller)
 cat /dev/zero > /zerofile; rm /zerofile
