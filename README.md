@@ -721,7 +721,7 @@ sudo time dd bs=1m if=RACHEL_500P.img of=/dev/rdisk# conv=sync
 
 * v5.0.0 - initial working/shipping CMAL150 version
 * v5.1.0 - update PHP 7.0 -> 7.4, include IMathAS tables in MySQL
-* v5.1.1 - fix contenthub upload (/media/uploaded ownership) and throttle rsync
+* v5.1.1 - fix contenthub upload permissions, fix duplicate startup.sh in rc.local
 
 ## Afterhoughts / TODOs
 
