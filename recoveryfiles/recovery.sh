@@ -2,7 +2,7 @@
 #
 # Copyright World Possible 2024
 
-version="5.1.0"
+version="5.1.1"
 
 dir="$(dirname "${BASH_SOURCE[0]}")"
 usb_mount="$(dirname "$(dirname "${BASH_SOURCE[0]}")")"
@@ -86,7 +86,7 @@ function execute_options(){
   if [ -f "$options_dir/00_PRODUCTION.txt" ]; then
     log "Running Production Mode"
     # later functions behave differently so it is not
-    # the same is 02_RESET
+    # the same as 02_RESET
     ssd_reset
     return
   fi
@@ -142,16 +142,6 @@ function emmc_config(){
 
   local emmc_log=$emmc_mount/etc/rachel/logs/post-run.txt
 
-  # these aren't on the RACHEL5 image at this point
-  # should be, we'll get there...
-  log "Making /etc/rachel directories"
-  mkdir $emmc_mount/etc/rachel
-  mkdir $emmc_mount/etc/rachel/install
-  mkdir $emmc_mount/etc/rachel/boot
-  mkdir $emmc_mount/etc/rachel/logs
-  log "Installing startup.sh"
-  cp $recovery_files/startup.sh $emmc_mount/etc/rachel/boot/; check
-
   if [ -f "$options_dir/NO_FIRSTBOOT.txt" ]; then
     log "Skipping firstboot.py installation"
   elif [ -f "$options_dir/00_PRODUCTION.txt" ]; then
@@ -170,12 +160,6 @@ function emmc_config(){
   # because datapost (and others?) have already started with
   # the wrong name
   sed 's/://g' /sys/class/net/eth0/address | cut -c 7-12 > $emmc_mount/etc/hostname
-
-  # we forgot this when making the device -- should be part of the image
-  sed -i '/^touch/i bash /etc/rachel/boot/startup.sh &' \
-    $emmc_mount/etc/rc.local
-  # and we missed this too
-  chmod +x $emmc_mount/etc/rc.local
 
   log "Copying ${usb_log} to ${emmc_log}"
   cp $usb_log $emmc_log; check
@@ -360,9 +344,11 @@ function sdd_contentshell(){
 function ssd_contenthub(){
   log "==== Content Hub Check ===="
 
-  # on RACHEL 5, the contenthub stuff is on the emmc
-  # and only the upload directory needs to be created
-  # if missing
+  # on RACHEL 5, the contenthub stuff is on the emmc, including
+  # a symlink from /media/uploaded to /.data/uploaded
+  # (/.data being the SSD) -- so the only thing we need to do
+  # is create the /.data/uploaded directory if missing
+  # (which is the case if we just formatted the SSD) 
 
   local uploaded_dir=$ssd_mount/uploaded
 
@@ -427,7 +413,7 @@ function ssd_moodle(){
   local moodle_symlink_path=/media/RACHEL/moodle
   local tar_file_moodle=$recovery_files/moodle-3.6.10.tar.gz
   local tar_file_moodle_data=$recovery_files/moodle-data-3.6.10.tar.gz
-  local tar_file_mysql=$recovery_files/mysql-RACHELv5.0.1.tar.gz
+  local tar_file_mysql=$recovery_files/mysql-RACHELv5.1.0.tar.gz
   local install=0
 
   if [ ! -d $mysql_dir ]; then
