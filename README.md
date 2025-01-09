@@ -487,7 +487,47 @@ printf "RACHEL: $(cat /etc/rachelinstaller-version) \n"
 printf "MAC: $(cat /sys/class/net/enp2s0/address) \n"
 EOF
 
+# this is where RACHEL keeps it's own install & startup scripts
+mkdir /etc/rachel
+mkdir /etc/rachel/boot
+mkdir /etc/rachel/install
+mkdir /etc/rachel/logs
+cp /root/buildfiles/startup.sh /etc/rachel/boot/
+
+# the firstboot.py installer script will be put in place
+# later by recovery.sh on the USB -- this is because the
+# version of firstboot.py varies depending on the installation
+# type (recovery vs. production)
+
+# add the rachel startup script to the
+# machine startup and make sure it's executble
+sed -i '/^touch/i bash /etc/rachel/boot/startup.sh &' /etc/rc.local
+chmod +x /etc/rc.local
+
 ```
+
+## Make tar files
+
+You must tar up the following since they are on the big HD -- they will not be part of
+the clonezilla copy and are instead put in place by recovery.sh during USB recovery. These
+tar files are too big to keep in github, so we keep them on the ftp server. But here's what
+you need to tar up:
+
+```
+cd /media/RACHEL
+tar -czvf mysql.tar.gz mysql
+tar -czvf moodle.tar.gz moodle
+tar -czvf moodle-data.tar.gz moodle-data
+tar -czvf kalite.tar.gz .kalite
+tar -czvf kolibri.tar.gz .kolibri
+tar --exclude='modules' -czvf contentshell.tar.tz rachel
+cd rachel
+tar -czvf ../modules.tar.tz modules
+```
+
+After these are made you can transfer them to http://ftp.worldpossible.org/rachel6/recoveryfiles and
+delete them locally.
+
 
 ## Cleanup
 
@@ -496,6 +536,9 @@ Some of this is helpful, some could probably be omitted
 ```
 # Get rid of leftover install files
 apt clean
+
+# get rid of unused packages
+apt autoremove
 
 rm -rf /root/RACHEL5
 rm -rf /root/buildfiles
@@ -510,19 +553,28 @@ find /var/log -name '*.gz' -delete
 find /var/log -name '*.1' -delete
 for i in $(find /var/log -type f); do cat /dev/null > $i; done
 
-# sanitize history
-:> /root/.bash_history
-:> /root/.viminfo
-rm /root/.mysql_history
-rm /root/.wget-hsts
-:> /home/cap/.bash_history
-:> /home/cap/.viminfo
+rm /.data
 
 # remove any extraneous auto-installer files
 rm /root/rachel-scripts/files/rachel-autoinstall.*
 
+# remove install logs and firstboot stuff (it's installed by recovery.sh on the USB)
+rm /etc/rachel/logs/*
+rm /etc/rachel/install/*
+
+# sanitize history
+:> /home/cap/.bash_history
+:> /home/cap/.viminfo
+:> /root/.viminfo
+rm /root/.mysql_history
+rm /root/.wget-hsts
+
+
 # if you want to clear out freespace (makes zipped filesystem smaller)
 cat /dev/zero > /zerofile; rm /zerofile
+
+:> /root/.bash_history
+shutdown -h now
 
 ```
 
@@ -623,7 +675,7 @@ Lastly, you bring the USB back to the Mac and do this:
 ```
 diskutil unmountDisk /dev/disk##
 sudo bash
-dd -bs=1m if=/dev/rdisk## of=~/RACHEL5/RACHEL_500P.img conv=sync
+dd bs=1m if=/dev/rdisk# of=RACHEL_500P.img conv=sync
 gzip ~/RACHEL5/RACHEL_500P.img
 ```
 
@@ -645,7 +697,9 @@ but instead:
 ```touch OPTIONS/01_CHECK_DRIVE.txt OPTIONS/02_RESET_DRIVE.txt```
 
 We also take the extra effort to hide all
-the directories under Windows except INSTRUCTIONS, LOGS, and OPTIONS.
+the directories under Windows except INSTRUCTIONS, LOGS, and OPTIONS. You can do
+this on a Mac using `chflags hidden FILENAME` and `chflags nohidden FILENAME`. You
+can also check the hidden status from the command line with `ls -lO` (that's a capital O).
 
 ## Disk Imaging on Mac
 
@@ -662,6 +716,12 @@ diskutil unmountDisk /Volumes/YOUR_USB_NAME
 # the above command will tell you the disk# wich you must insert below
 sudo time dd bs=1m if=RACHEL_500P.img of=/dev/rdisk# conv=sync
 ```
+
+### Version Changes
+
+* v5.0.0 - initial working/shipping CMAL150 version
+* v5.1.0 - update PHP 7.0 -> 7.4, include IMathAS tables in MySQL
+* v5.1.1 - fix contenthub upload (/media/uploaded ownership) and throttle rsync
 
 ## Afterhoughts / TODOs
 
@@ -738,3 +798,6 @@ rm en-local_content/CAP3_old.png
 The above size removal items *were* included on RACHEL_500P -- but I did not change the modules on our server
 so if they get reinstalled or the USB gets recreated you'll get another 289M of stuff
 
+There is some confusion/mess with `/media` where the CAP1 & CAP2 mounted the big drive, and `/.data`
+where the CMAL100 and CMAL150 mount the big drive. This should be cleaned up. Right now there's some duplicated/unused
+directories in there and it's not always clear which one is actually being used.
