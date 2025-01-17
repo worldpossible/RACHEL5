@@ -582,7 +582,22 @@ shutdown -h now
 
 After you have a version of RACHEL working to your satisfaction, you need to shut it down cleanly
 and take an image using Clonezilla. The details are a bit too involved to include here, but basically
-you make a Clonezilla USB, boot with that, choose "To RAM", then have it clone the whole eMMC (clonedisk).
+you make a Clonezilla USB, something like this on the mac:
+
+```
+diskutil partitionDisk /dev/disk## MBR FAT32 CLONEZILLA
+cd /Volumes/Master/RACHEL/RACHEL5
+unzip clonezilla-live-3.1.3-16-i686.zip -d /Volumes/CLONEZILLA
+diskutil unmountDisk CLONEZILLA
+```
+
+Then you want to boot with that USB. Not sure how to integrate (grub.config?), but this is the command line if you don't want to do it all interatively:
+
+```
+/usr/sbin/ocs-sr -q2 -c -j2 -z9p -i 4096 -sfsck -scs -senc -p poweroff savedisk 2025-01-08-23-img mmcblk0
+```
+
+But assuming interactive: choose "To RAM", then have it clone the whole eMMC (clonedisk).
 You'll end up with a Clonzilla  image directory used in the next step, which will restore the device to a
 known state.
 
@@ -722,6 +737,7 @@ sudo time dd bs=1m if=RACHEL_500P.img of=/dev/rdisk# conv=sync
 * v5.0.0 - initial working/shipping CMAL150 version
 * v5.1.0 - update PHP 7.0 -> 7.4, include IMathAS tables in MySQL
 * v5.1.1 - fix contenthub upload permissions, fix duplicate startup.sh in rc.local
+* v5.1.2 - fix broken roundcube from v5.1.0 PHP upgrade
 
 ## Afterhoughts / TODOs
 
