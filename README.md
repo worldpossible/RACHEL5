@@ -447,8 +447,8 @@ echo "v5.0.0" > /etc/rachelinstaller-version
 
 # I can't find versioning in the actual emule code, but
 # [this page](https://github.com/worldpossible/datapost-field-util)
-# claims it is v0.2.1 so we'll go with that until there's better information
-echo "v0.2.1" > /etc/datapost-version
+# claims it is 0.2.1 so we'll go with that until there's better information
+echo "0.2.1" > /etc/datapost-version
 
 # these are slow, so we just save them
 kolibri --version | cut -d " " -f 3 > /etc/kolibri-version
@@ -531,17 +531,13 @@ delete them locally.
 
 ## Cleanup
 
-Some of this is helpful, some could probably be omitted
-
 ```
 # clear out any hardcoded mac addresses (firstboot.py updates these anyway, though)
-# removed mac_id from these, replaced with "vicky" (per original files)
-vi /opt/emulewebservice/config/exim4-conf/remote/update-exim4.conf.conf
-vi /opt/emulewebservice/config/roundcube/main.inc.php
-# removed mac_id from these, replaced with '' (per original file)
-vi /etc/roundcube/main.inc.php
-vi /etc/roundcube/config.inc.php
-
+sed -i '/default_host/ s/......\.datapost\.site//' /etc/roundcube/main.inc.php
+sed -i '/default_host/ s/......\.datapost\.site//' /etc/roundcube/config.inc.php
+# even in the DB
+sqlite3 /var/lib/dbconfig-common/sqlite3/roundcube/roundcube 'delete from identities'
+sqlite3 /var/lib/dbconfig-common/sqlite3/roundcube/roundcube 'delete from users'
 
 # Get rid of leftover install files
 apt clean
@@ -571,9 +567,6 @@ find /var/log -name '*.gz' -delete
 find /var/log -name '*.1' -delete
 for i in $(find /var/log -type f); do cat /dev/null > $i; done
 
-# remove any extraneous auto-installer files
-rm /root/rachel-scripts/files/rachel-autoinstall.*
-
 # remove install logs and firstboot stuff (it's installed by recovery.sh on the USB)
 rm /etc/rachel/logs/*
 rm -rf /etc/rachel/install/*
@@ -581,6 +574,7 @@ rm -rf /etc/rachel/install/*
 # sanitize history
 :> /home/cap/.bash_history
 :> /home/cap/.viminfo
+:> /var/mail/cap
 :> /root/.viminfo
 rm /root/.mysql_history
 rm /root/.wget-hsts
