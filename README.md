@@ -557,19 +557,26 @@ rm -rf /tmp/sortmods*
 rm -rf /tmp/do_tasks.log
 rm /srv/.git* # this was a one-time thing
 
+# shut down servers
+service nginx stop
+service php7.4-fpm stop
+service exim4 stop
+service dovecot stop
+service ka-lite stop
+service kolibri stop
+service mysql stop
+
 # sanitize logs
 find /var/log -name '*.gz' -delete
 find /var/log -name '*.1' -delete
 for i in $(find /var/log -type f); do cat /dev/null > $i; done
-
-rm /.data
 
 # remove any extraneous auto-installer files
 rm /root/rachel-scripts/files/rachel-autoinstall.*
 
 # remove install logs and firstboot stuff (it's installed by recovery.sh on the USB)
 rm /etc/rachel/logs/*
-rm /etc/rachel/install/*
+rm -rf /etc/rachel/install/*
 
 # sanitize history
 :> /home/cap/.bash_history
@@ -577,7 +584,7 @@ rm /etc/rachel/install/*
 :> /root/.viminfo
 rm /root/.mysql_history
 rm /root/.wget-hsts
-
+rm /root/.ssh/known_hosts
 
 # if you want to clear out freespace (makes zipped filesystem smaller)
 cat /dev/zero > /zerofile; rm /zerofile
