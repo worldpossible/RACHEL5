@@ -534,6 +534,15 @@ delete them locally.
 Some of this is helpful, some could probably be omitted
 
 ```
+# clear out any hardcoded mac addresses (firstboot.py updates these anyway, though)
+# removed mac_id from these, replaced with "vicky" (per original files)
+vi /opt/emulewebservice/config/exim4-conf/remote/update-exim4.conf.conf
+vi /opt/emulewebservice/config/roundcube/main.inc.php
+# removed mac_id from these, replaced with '' (per original file)
+vi /etc/roundcube/main.inc.php
+vi /etc/roundcube/config.inc.php
+
+
 # Get rid of leftover install files
 apt clean
 
