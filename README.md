@@ -732,8 +732,11 @@ but instead:
 
 We also take the extra effort to hide all
 the directories under Windows except INSTRUCTIONS, LOGS, and OPTIONS. You can do
-this on a Mac using `chflags hidden FILENAME` and `chflags nohidden FILENAME`. You
-can also check the hidden status from the command line with `ls -lO` (that's a capital O).
+this on a Mac using `chflags hidden FILENAME` and `chflags nohidden FILENAME`. 
+
+```chflags hidden boot Clonezilla-Live-Version EFI GPL home i686-release.txt live recovery syslinux utils```
+
+You can also check the hidden status from the command line with `ls -lO` (that's a capital O).
 
 ## Disk Imaging on Mac
 
