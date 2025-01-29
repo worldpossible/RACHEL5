@@ -756,7 +756,9 @@ sudo time dd bs=1m if=RACHEL_500P.img of=/dev/rdisk# conv=sync
 * v5.0.0 - initial working/shipping CMAL150 version
 * v5.1.0 - update PHP 7.0 -> 7.4, include IMathAS tables in MySQL
 * v5.1.1 - fix contenthub upload permissions, fix duplicate startup.sh in rc.local
-* v5.1.2 - fix broken roundcube from v5.1.0 PHP upgrade
+* v5.1.2 - fix broken roundcube from v5.1.0 PHP upgrade -- missing some modules
+* v5.1.3 - fix broken roundcube again -- hardcoded mac address in config files (since v5.1.0)
+* v5.1.4 - fix module.zip upload on admin/settings page, restore kalite subtitles & pre-register
 
 ## Afterhoughts / TODOs
 
