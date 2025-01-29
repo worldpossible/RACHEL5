@@ -186,6 +186,24 @@ def configure_datapost():
             line = exim_hostnames;
         print(line.rstrip())  
 
+    log("DataPost: Setting roundcube domain in main.inc.php")
+    roundcube_conf     = "/etc/roundcube/main.inc.php"
+    roundcube_host     = "$rcmail_config['default_host'] = '" + site + "';"
+
+    for line in fileinput.input(roundcube_conf, inplace = 1):
+        if "$rcmail_config['default_host']" in line:
+            line = roundcube_host;
+        print(line.rstrip())  
+
+    log("DataPost: Setting roundcube domain in config.inc.php")
+    roundcube_conf     = "/etc/roundcube/config.inc.php"
+    roundcube_host     = "$config['default_host'] = '" + site + "';"
+
+    for line in fileinput.input(roundcube_conf, inplace = 1):
+        if "$config['default_host']" in line:
+            line = roundcube_host;
+        print(line.rstrip())  
+
     offset = -4
 
     if len(site_id) > offset:

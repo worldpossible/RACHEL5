@@ -2,7 +2,7 @@
 #
 # Copyright World Possible 2024
 
-version="5.1.1"
+version="5.1.4"
 
 dir="$(dirname "${BASH_SOURCE[0]}")"
 usb_mount="$(dirname "$(dirname "${BASH_SOURCE[0]}")")"
@@ -390,7 +390,7 @@ function ssd_kalite(){
 
   local rachel_dir=$ssd_mount/RACHEL
   local kalite_dir=$rachel_dir/.kalite
-  local tar_file=$recovery_files/kalite-0.17.4.tar.gz
+  local tar_file=$recovery_files/kalite-0.17.4-RACHELv5.1.4.tar.gz
 
   if [ ! -d $kalite_dir ]; then
     log "Missing ${kalite_dir}. Installing ${tar_file}..."
