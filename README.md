@@ -298,6 +298,15 @@ kalite start
 # entry on the RACHEL index. We don't install that because it would require
 # installing the 40GB of videos at this point, but we'd rather do that
 # during the rest of the content install in production
+
+# captions are in the wrong place by default:
+cd /media/RACHEL/.kalite/httpsrv/static
+rm -rf srt
+ln -s ../../content/srt
+
+# then open kalite in the browser, create an admin acount with Rachel+1
+# and do the "one click registration" so that the user doesn't have to
+
  
 ```
 
@@ -447,8 +456,8 @@ echo "v5.0.0" > /etc/rachelinstaller-version
 
 # I can't find versioning in the actual emule code, but
 # [this page](https://github.com/worldpossible/datapost-field-util)
-# claims it is v0.2.1 so we'll go with that until there's better information
-echo "v0.2.1" > /etc/datapost-version
+# claims it is 0.2.1 so we'll go with that until there's better information
+echo "0.2.1" > /etc/datapost-version
 
 # these are slow, so we just save them
 kolibri --version | cut -d " " -f 3 > /etc/kolibri-version
@@ -531,9 +540,14 @@ delete them locally.
 
 ## Cleanup
 
-Some of this is helpful, some could probably be omitted
-
 ```
+# clear out any hardcoded mac addresses (firstboot.py updates these anyway, though)
+sed -i '/default_host/ s/......\.datapost\.site//' /etc/roundcube/main.inc.php
+sed -i '/default_host/ s/......\.datapost\.site//' /etc/roundcube/config.inc.php
+# even in the DB
+sqlite3 /var/lib/dbconfig-common/sqlite3/roundcube/roundcube 'delete from identities'
+sqlite3 /var/lib/dbconfig-common/sqlite3/roundcube/roundcube 'delete from users'
+
 # Get rid of leftover install files
 apt clean
 
@@ -548,27 +562,32 @@ rm -rf /tmp/sortmods*
 rm -rf /tmp/do_tasks.log
 rm /srv/.git* # this was a one-time thing
 
+# shut down servers
+service nginx stop
+service php7.4-fpm stop
+service exim4 stop
+service dovecot stop
+service ka-lite stop
+service kolibri stop
+service mysql stop
+
 # sanitize logs
 find /var/log -name '*.gz' -delete
 find /var/log -name '*.1' -delete
 for i in $(find /var/log -type f); do cat /dev/null > $i; done
 
-rm /.data
-
-# remove any extraneous auto-installer files
-rm /root/rachel-scripts/files/rachel-autoinstall.*
-
 # remove install logs and firstboot stuff (it's installed by recovery.sh on the USB)
 rm /etc/rachel/logs/*
-rm /etc/rachel/install/*
+rm -rf /etc/rachel/install/*
 
 # sanitize history
 :> /home/cap/.bash_history
 :> /home/cap/.viminfo
+:> /var/mail/cap
 :> /root/.viminfo
 rm /root/.mysql_history
 rm /root/.wget-hsts
-
+rm /root/.ssh/known_hosts
 
 # if you want to clear out freespace (makes zipped filesystem smaller)
 cat /dev/zero > /zerofile; rm /zerofile
@@ -582,7 +601,22 @@ shutdown -h now
 
 After you have a version of RACHEL working to your satisfaction, you need to shut it down cleanly
 and take an image using Clonezilla. The details are a bit too involved to include here, but basically
-you make a Clonezilla USB, boot with that, choose "To RAM", then have it clone the whole eMMC (clonedisk).
+you make a Clonezilla USB, something like this on the mac:
+
+```
+diskutil partitionDisk /dev/disk## MBR FAT32 CLONEZILLA
+cd /Volumes/Master/RACHEL/RACHEL5
+unzip clonezilla-live-3.1.3-16-i686.zip -d /Volumes/CLONEZILLA
+diskutil unmountDisk CLONEZILLA
+```
+
+Then you want to boot with that USB. Not sure how to integrate (grub.config?), but this is the command line if you don't want to do it all interatively:
+
+```
+/usr/sbin/ocs-sr -q2 -c -j2 -z9p -i 4096 -sfsck -scs -senc -p poweroff savedisk 2025-01-08-23-img mmcblk0
+```
+
+But assuming interactive: choose "To RAM", then have it clone the whole eMMC (clonedisk).
 You'll end up with a Clonzilla  image directory used in the next step, which will restore the device to a
 known state.
 
@@ -721,7 +755,10 @@ sudo time dd bs=1m if=RACHEL_500P.img of=/dev/rdisk# conv=sync
 
 * v5.0.0 - initial working/shipping CMAL150 version
 * v5.1.0 - update PHP 7.0 -> 7.4, include IMathAS tables in MySQL
-* v5.1.1 - fix contenthub upload (/media/uploaded ownership) and throttle rsync
+* v5.1.1 - fix contenthub upload permissions, fix duplicate startup.sh in rc.local
+* v5.1.2 - fix broken roundcube from v5.1.0 PHP upgrade -- missing some modules
+* v5.1.3 - fix broken roundcube again -- hardcoded mac address in config files (since v5.1.0)
+* v5.1.4 - fix module.zip upload on admin/settings page, restore kalite subtitles & pre-register
 
 ## Afterhoughts / TODOs
 
