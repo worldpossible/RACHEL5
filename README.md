@@ -298,6 +298,15 @@ kalite start
 # entry on the RACHEL index. We don't install that because it would require
 # installing the 40GB of videos at this point, but we'd rather do that
 # during the rest of the content install in production
+
+# captions are in the wrong place by default:
+cd /media/RACHEL/.kalite/httpsrv/static
+rm -rf srt
+ln -s ../../content/srt
+
+# then open kalite in the browser, create an admin acount with Rachel+1
+# and do the "one click registration" so that the user doesn't have to
+
  
 ```
 
